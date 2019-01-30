@@ -16,7 +16,7 @@ define ("SERIAL_DEVICE_OPENED", 2);
  * @thanks Jim Wright for OSX cleanup/fixes.
  * @copyright under GPL 2 licence
  */
-class PhpSerial
+class SerialConnection
 {
     public $_device = null;
     public $_winDevice = null;
@@ -82,7 +82,7 @@ class PhpSerial
      * @param  string $device the name of the device to be used
      * @return bool
      */
-    public function deviceSet($device)
+    public function setDevice($device)
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
             if ($this->_os === "linux") {
@@ -180,7 +180,7 @@ class PhpSerial
      *
      * @return bool
      */
-    public function deviceClose()
+    public function close()
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
             return true;
@@ -214,7 +214,7 @@ class PhpSerial
      * @param  int  $rate the rate to set the port in
      * @return bool
      */
-    public function confBaudRate($rate)
+    public function setBaudRate($rate)
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set the baud rate : the device is " .
@@ -280,7 +280,7 @@ class PhpSerial
      * @param  string $parity one of the modes
      * @return bool
      */
-    public function confParity($parity)
+    public function setParity($parity)
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error(
@@ -335,7 +335,7 @@ class PhpSerial
      * @param  int  $int length of a character (5 <= length <= 8)
      * @return bool
      */
-    public function confCharacterLength($int)
+    public function setCharacterLength($int)
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set length of a character : the device " .
@@ -388,7 +388,7 @@ class PhpSerial
      *                       some computers.
      * @return bool
      */
-    public function confStopBits($length)
+    public function setStopBits($length)
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set the length of a stop bit : the " .
@@ -450,7 +450,7 @@ class PhpSerial
      *                      -> "xon/xoff" : use XON/XOFF protocol
      * @return bool
      */
-    public function confFlowControl($mode)
+    public function setFlowControl($mode)
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set flow control mode : the device is " .
@@ -515,7 +515,7 @@ class PhpSerial
      * @param  string $arg   parameter value
      * @return bool
      */
-    public function setSetserialFlag($param, $arg = "")
+    public function setSetSerialFlag($param, $arg = "")
     {
         if (!$this->_ckOpened()) {
             return false;
@@ -552,9 +552,9 @@ class PhpSerial
      * @param string $str          string to be sent to the device
      * @param float  $waitForReply time to wait for the reply (in seconds)
      */
-    public function sendMessage($str, $waitForReply = 0.1)
+    public function send($message, $waitForReply = 0.1)
     {
-        $this->_buffer .= $str;
+        $this->_buffer .= $message;
 
         if ($this->autoFlush === true) {
             $this->serialflush();
@@ -629,7 +629,7 @@ class PhpSerial
      *
      * @return bool
      */
-    public function serialflush()
+    public function flush()
     {
         if (!$this->_ckOpened()) {
             return false;
