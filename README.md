@@ -23,27 +23,27 @@ Example
 
 ```php
 <?php
-include 'PhpSerial.php';
+include 'SerialConnection.php';
 
 // Let's start the class
-$serial = new PhpSerial();
+$serial = new SerialConnection();
 
 // First we must specify the device. This works on both linux and windows (if
 // your linux serial device is /dev/ttyS0 for COM1, etc)
-$serial->deviceSet("COM1");
+$serial->setDevice("COM1");
 
 // We can change the baud rate, parity, length, stop bits, flow control
-$serial->confBaudRate(2400);
-$serial->confParity("none");
-$serial->confCharacterLength(8);
-$serial->confStopBits(1);
-$serial->confFlowControl("none");
+$serial->setBaudRate(2400);
+$serial->setParity("none");
+$serial->setCharacterLength(8);
+$serial->setStopBits(1);
+$serial->setFlowControl("none");
 
 // Then we need to open it
-$serial->deviceOpen();
+$serial->open();
 
 // To write into
-$serial->sendMessage("Hello !");
+$serial->sendMessage("Hello, World!");
 ```
 
 State of the project
