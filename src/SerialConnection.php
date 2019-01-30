@@ -134,7 +134,7 @@ class SerialConnection
      * @param  string $mode Opening mode : same parameter as fopen()
      * @return bool
      */
-    public function deviceOpen($mode = "r+b")
+    public function open($mode = "r+b")
     {
         if ($this->_dState === SERIAL_DEVICE_OPENED) {
             trigger_error("The device is already opened", E_USER_NOTICE);
