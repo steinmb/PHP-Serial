@@ -1,6 +1,13 @@
 PHP Serial
 ==========
 
+Install
+-------
+
+```bash
+composer require blamebutton/php-serial
+```
+
 PHP Serial was written at a time where I did not know any other language than
 PHP and I started to get seriously bored with its abilities.
 
@@ -19,7 +26,7 @@ Example
 include 'PhpSerial.php';
 
 // Let's start the class
-$serial = new PhpSerial;
+$serial = new PhpSerial();
 
 // First we must specify the device. This works on both linux and windows (if
 // your linux serial device is /dev/ttyS0 for COM1, etc)
