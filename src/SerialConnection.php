@@ -164,7 +164,7 @@ final class SerialConnection
      *
      * @return bool
      */
-    public function setBaudRate($rate)
+    public function setBaudRate($rate): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set the baud rate : the device is " .
@@ -287,7 +287,7 @@ final class SerialConnection
      *
      * @return bool
      */
-    public function setCharacterLength($int): bool
+    public function setCharacterLength(int $int): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set length of a character : the device " .
@@ -372,7 +372,7 @@ final class SerialConnection
         } elseif ($this->_os === 'osx') {
             $ret = $this->_exec(
                 "stty -f " . $this->_device . " " .
-                    (($length == 1) ? "-" : "") . "cstopb",
+                    (($length === 1) ? "-" : "") . "cstopb",
                 $out
             );
         } else {
@@ -496,7 +496,7 @@ final class SerialConnection
      * @param float $waitForReply
      *   time to wait for the reply (in seconds).
      */
-    public function send($message, $waitForReply = 0.1)
+    public function send($message, $waitForReply = 0.1): void
     {
         $this->_buffer .= $message;
 
@@ -615,12 +615,12 @@ final class SerialConnection
         return true;
     }
 
-    public function _exec($cmd, &$out = null)
+    public function _exec($cmd, &$out = null): int
     {
-        $desc = array(
-            1 => array("pipe", "w"),
-            2 => array("pipe", "w")
-        );
+        $desc = [
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
 
         $proc = proc_open($cmd, $desc, $pipes);
 
@@ -632,7 +632,8 @@ final class SerialConnection
 
         $retVal = proc_close($proc);
 
-        if (func_num_args() == 2) $out = array($ret, $err);
+        if (func_num_args() === 2) $out = array($ret, $err);
+
         return $retVal;
     }
 
