@@ -7,7 +7,7 @@ class System
 
     public function __construct()
     {
-        setlocale(LC_ALL, "en_US");
+        setlocale(LC_ALL, 'en_US');
 
         $sysName = php_uname();
 
@@ -25,15 +25,14 @@ class System
         } elseif (strpos($sysName, 'Darwin') === 0) {
             $this->_os = 'osx';
             register_shutdown_function(array($this, 'deviceClose'));
-        } elseif (strpos($sysName, "Windows") === 0) {
-            $this->_os = "windows";
-            register_shutdown_function(array($this, "deviceClose"));
+        } elseif (strpos($sysName, 'Windows') === 0) {
+            $this->_os = 'windows';
+            register_shutdown_function(array($this, 'deviceClose'));
         } else {
             trigger_error(
-                'Uknown host OS, unable to run.',
+                'Unknown host OS, unable to run.',
                 E_USER_ERROR
             );
         }
-
     }
 }

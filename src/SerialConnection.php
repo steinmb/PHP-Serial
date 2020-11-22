@@ -15,6 +15,7 @@ final class SerialConnection
     public $_dState = SERIAL_DEVICE_NOTSET;
     public $_buffer = "";
     public $_os = "";
+    private $operatingSystem;
 
     /**
      * This var says if buffer should be flushed by sendMessage (true) or
@@ -24,8 +25,9 @@ final class SerialConnection
      */
     public $autoFlush = true;
 
-    public function __construct()
+    public function __construct(System $operatingSystem)
     {
+        $this->operatingSystem = $operatingSystem;
     }
 
     /**
