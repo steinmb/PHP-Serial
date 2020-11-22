@@ -9,9 +9,9 @@ define ("SERIAL_DEVICE_OPENED", 2);
  */
 final class SerialConnection
 {
-    public $_device = null;
-    public $_winDevice = null;
-    public $_dHandle = null;
+    public $_device;
+    public $_winDevice;
+    public $_dHandle;
     public $_dState = SERIAL_DEVICE_NOTSET;
     public $_buffer = "";
     public $_os = "";
@@ -26,33 +26,6 @@ final class SerialConnection
 
     public function __construct()
     {
-        setlocale(LC_ALL, "en_US");
-
-        $sysName = php_uname();
-
-        if (strpos($sysName, "Linux") === 0) {
-            $this->_os = "linux";
-
-            if ($this->_exec("stty") === 0) {
-                register_shutdown_function(array($this, "deviceClose"));
-            } else {
-                trigger_error(
-                    "No stty availible, unable to run.",
-                    E_USER_ERROR
-                );
-            }
-        } elseif (strpos($sysName, "Darwin") === 0) {
-            $this->_os = "osx";
-            register_shutdown_function(array($this, "deviceClose"));
-        } elseif (strpos($sysName, "Windows") === 0) {
-            $this->_os = "windows";
-            register_shutdown_function(array($this, "deviceClose"));
-        } else {
-            trigger_error(
-                'Uknown host OS, unable to run.',
-                E_USER_ERROR
-            );
-        }
     }
 
     /**

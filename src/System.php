@@ -1,0 +1,39 @@
+<?php declare(strict_types=1);
+
+
+class System
+{
+    public $operatingSystem;
+
+    public function __construct()
+    {
+        setlocale(LC_ALL, "en_US");
+
+        $sysName = php_uname();
+
+        if (strpos($sysName, 'Linux') === 0) {
+            $this->operatingSystem = 'linux';
+
+            if ($this->_exec("stty") === 0) {
+                register_shutdown_function(array($this, 'deviceClose'));
+            } else {
+                trigger_error(
+                    'No stty available, unable to run.',
+                    E_USER_ERROR
+                );
+            }
+        } elseif (strpos($sysName, 'Darwin') === 0) {
+            $this->_os = 'osx';
+            register_shutdown_function(array($this, 'deviceClose'));
+        } elseif (strpos($sysName, "Windows") === 0) {
+            $this->_os = "windows";
+            register_shutdown_function(array($this, "deviceClose"));
+        } else {
+            trigger_error(
+                'Uknown host OS, unable to run.',
+                E_USER_ERROR
+            );
+        }
+
+    }
+}
