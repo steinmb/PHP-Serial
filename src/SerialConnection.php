@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 define ("SERIAL_DEVICE_NOTSET", 0);
 define ("SERIAL_DEVICE_SET", 1);
 define ("SERIAL_DEVICE_OPENED", 2);
@@ -16,7 +17,7 @@ define ("SERIAL_DEVICE_OPENED", 2);
  * @thanks Jim Wright for OSX cleanup/fixes.
  * @copyright under GPL 2 licence
  */
-class SerialConnection
+final class SerialConnection
 {
     public $_device = null;
     public $_winDevice = null;
@@ -33,18 +34,13 @@ class SerialConnection
      */
     public $autoFlush = true;
 
-    /**
-     * Constructor. Perform some checks about the OS and setserial
-     *
-     * @return PhpSerial
-     */
     public function __construct()
     {
         setlocale(LC_ALL, "en_US");
 
         $sysName = php_uname();
 
-        if (substr($sysName, 0, 5) === "Linux") {
+        if (strpos($sysName, "Linux") === 0) {
             $this->_os = "linux";
 
             if ($this->_exec("stty") === 0) {
@@ -55,22 +51,19 @@ class SerialConnection
                     E_USER_ERROR
                 );
             }
-        } elseif (substr($sysName, 0, 6) === "Darwin") {
+        } elseif (strpos($sysName, "Darwin") === 0) {
             $this->_os = "osx";
             register_shutdown_function(array($this, "deviceClose"));
-        } elseif (substr($sysName, 0, 7) === "Windows") {
+        } elseif (strpos($sysName, "Windows") === 0) {
             $this->_os = "windows";
             register_shutdown_function(array($this, "deviceClose"));
         } else {
-            trigger_error("Host OS is neither osx, linux nor windows, unable " .
-                          "to run.", E_USER_ERROR);
-            exit();
+            trigger_error(
+                'Uknown host OS, unable to run.',
+                E_USER_ERROR
+            );
         }
     }
-
-    //
-    // OPEN/CLOSE DEVICE SECTION -- {START}
-    //
 
     /**
      * Device set function : used to set the device name/address.
@@ -80,9 +73,10 @@ class SerialConnection
      *     with linux)
      *
      * @param  string $device the name of the device to be used
+     *
      * @return bool
      */
-    public function setDevice($device)
+    public function setDevice($device): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
             if ($this->_os === "linux") {
@@ -120,12 +114,12 @@ class SerialConnection
             trigger_error("Specified serial port is not valid", E_USER_WARNING);
 
             return false;
-        } else {
-            trigger_error("You must close your device before to set an other " .
-                          "one", E_USER_WARNING);
-
-            return false;
         }
+
+        trigger_error("You must close your device before to set an other " .
+                      "one", E_USER_WARNING);
+
+        return false;
     }
 
     /**
@@ -180,7 +174,7 @@ class SerialConnection
      *
      * @return bool
      */
-    public function close()
+    public function close(): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
             return true;
@@ -194,17 +188,7 @@ class SerialConnection
         }
 
         trigger_error("Unable to close the device", E_USER_ERROR);
-
-        return false;
     }
-
-    //
-    // OPEN/CLOSE DEVICE SECTION -- {STOP}
-    //
-
-    //
-    // CONFIGURE SECTION -- {START}
-    //
 
     /**
      * Configure the Baud Rate
@@ -212,6 +196,7 @@ class SerialConnection
      * 57600 and 115200.
      *
      * @param  int  $rate the rate to set the port in
+     *
      * @return bool
      */
     public function setBaudRate($rate)
@@ -268,9 +253,9 @@ class SerialConnection
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -278,9 +263,10 @@ class SerialConnection
      * Modes : odd, even, none
      *
      * @param  string $parity one of the modes
+     *
      * @return bool
      */
-    public function setParity($parity)
+    public function setParity($parity): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error(
@@ -333,9 +319,10 @@ class SerialConnection
      * Sets the length of a character.
      *
      * @param  int  $int length of a character (5 <= length <= 8)
+     *
      * @return bool
      */
-    public function setCharacterLength($int)
+    public function setCharacterLength($int): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set length of a character : the device " .
