@@ -6,16 +6,6 @@ define ("SERIAL_DEVICE_OPENED", 2);
 
 /**
  * Serial port control class
- *
- * THIS PROGRAM COMES WITH ABSOLUTELY NO WARRANTIES !
- * USE IT AT YOUR OWN RISKS !
- *
- * @author Rémy Sanchez <remy.sanchez@hyperthese.net>
- * @author Rizwan Kassim <rizwank@geekymedia.com>
- * @thanks Aurélien Derouineau for finding how to open serial ports with windows
- * @thanks Alec Avedisyan for help and testing with reading
- * @thanks Jim Wright for OSX cleanup/fixes.
- * @copyright under GPL 2 licence
  */
 final class SerialConnection
 {
@@ -370,12 +360,13 @@ final class SerialConnection
     /**
      * Sets the length of stop bits.
      *
-     * @param  float $length the length of a stop bit. It must be either 1,
-     *                       1.5 or 2. 1.5 is not supported under linux and on
-     *                       some computers.
+     * @param  float $length the length of a stop bit.
+     * It must be either 1, 1.5 or 2. 1.5 is not supported
+     * under linux and on some computers.
+     *
      * @return bool
      */
-    public function setStopBits($length)
+    public function setStopBits($length): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set the length of a stop bit : the " .
@@ -384,10 +375,10 @@ final class SerialConnection
             return false;
         }
 
-        if ($length != 1
-                and $length != 2
-                and $length != 1.5
-                and !($length == 1.5 and $this->_os === "linux")
+        if ($length !== 1
+                and $length !== 2
+                and $length !== 1.5
+                and !($length === 1.5 and $this->_os === 'linux')
         ) {
             trigger_error(
                 "Specified stop bit length is invalid",
@@ -400,10 +391,10 @@ final class SerialConnection
         if ($this->_os === "linux") {
             $ret = $this->_exec(
                 "stty -F " . $this->_device . " " .
-                    (($length == 1) ? "-" : "") . "cstopb",
+                    (($length === 1) ? "-" : "") . 'cstopb',
                 $out
             );
-        } elseif ($this->_os === "osx") {
+        } elseif ($this->_os === 'osx') {
             $ret = $this->_exec(
                 "stty -f " . $this->_device . " " .
                     (($length == 1) ? "-" : "") . "cstopb",
@@ -431,13 +422,13 @@ final class SerialConnection
     /**
      * Configures the flow control
      *
-     * @param  string $mode Set the flow control mode. Availible modes :
+     * @param  string $mode Set the flow control mode. Available modes :
      *                      -> "none" : no flow control
      *                      -> "rts/cts" : use RTS/CTS handshaking
      *                      -> "xon/xoff" : use XON/XOFF protocol
      * @return bool
      */
-    public function setFlowControl($mode)
+    public function setFlowControl($mode): ?bool
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set flow control mode : the device is " .
@@ -459,8 +450,6 @@ final class SerialConnection
 
         if ($mode !== "none" and $mode !== "rts/cts" and $mode !== "xon/xoff") {
             trigger_error("Invalid flow control mode specified", E_USER_ERROR);
-
-            return false;
         }
 
         if ($this->_os === "linux") {
@@ -482,14 +471,12 @@ final class SerialConnection
 
         if ($ret === 0) {
             return true;
-        } else {
-            trigger_error(
-                "Unable to set flow control : " . $out[1],
-                E_USER_ERROR
-            );
-
-            return false;
         }
+
+        trigger_error(
+            "Unable to set flow control : " . $out[1],
+            E_USER_ERROR
+        );
     }
 
     /**
@@ -516,28 +503,23 @@ final class SerialConnection
             trigger_error("setserial: Invalid flag", E_USER_WARNING);
 
             return false;
-        } elseif ($return{0} === "/") {
+        }
+
+        if ($return{0} === "/") {
             trigger_error("setserial: Error with device file", E_USER_WARNING);
 
             return false;
-        } else {
-            return true;
         }
+
+        return true;
     }
-
-    //
-    // CONFIGURE SECTION -- {STOP}
-    //
-
-    //
-    // I/O SECTION -- {START}
-    //
 
     /**
      * Sends a string to the device
      *
-     * @param string $str          string to be sent to the device
-     * @param float  $waitForReply time to wait for the reply (in seconds)
+     * @param $message
+     * @param float $waitForReply
+     *   time to wait for the reply (in seconds).
      */
     public function send($message, $waitForReply = 0.1)
     {
@@ -586,7 +568,9 @@ final class SerialConnection
             }
 
             return $content;
-        } elseif ($this->_os === "windows") {
+        }
+
+        if ($this->_os === "windows") {
             // Windows port reading procedures still buggy
             $content = ""; $i = 0;
 
@@ -626,21 +610,13 @@ final class SerialConnection
             $this->_buffer = "";
 
             return true;
-        } else {
-            $this->_buffer = "";
-            trigger_error("Error while sending message", E_USER_WARNING);
-
-            return false;
         }
+
+        $this->_buffer = "";
+        trigger_error("Error while sending message", E_USER_WARNING);
+
+        return false;
     }
-
-    //
-    // I/O SECTION -- {STOP}
-    //
-
-    //
-    // INTERNAL TOOLKIT -- {START}
-    //
 
     public function _ckOpened()
     {
@@ -685,7 +661,7 @@ final class SerialConnection
         return $retVal;
     }
 
-    //
-    // INTERNAL TOOLKIT -- {STOP}
-    //
+    private function serialflush()
+    {
+    }
 }
