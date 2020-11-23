@@ -4,7 +4,7 @@ namespace steinmb\phpSerial;
 
 use Exception;
 
-class System
+final class System
 {
     public $operatingSystem;
     public $_os;

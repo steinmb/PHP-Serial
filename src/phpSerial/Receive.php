@@ -2,7 +2,7 @@
 
 namespace steinmb\phpSerial;
 
-class Receive implements ReceiveInterface
+final class Receive implements ReceiveInterface
 {
     private $serialConnection;
 

@@ -2,7 +2,7 @@
 
 namespace steinmb\phpSerial;
 
-class Send implements SendInterface
+final class Send implements SendInterface
 {
     /**
      * @var SerialConnection
