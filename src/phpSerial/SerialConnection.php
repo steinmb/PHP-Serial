@@ -51,6 +51,13 @@ final class SerialConnection
         $this->flowControl = $flowControl;
     }
 
+    public function changeDevice(string $device): SerialConnection
+    {
+        $new_object = clone $this;
+        $new_object->setDevice($device);
+        return $new_object;
+    }
+
     /**
      * Device set function : used to set the device name/address.
      * -> linux : use the device address, like /dev/ttyS0
@@ -60,54 +67,52 @@ final class SerialConnection
      *
      * @param  string $device the name of the device to be used
      *
-     * @return SerialConnection
+     * @return
      */
-    public function setDevice(string $device): SerialConnection
+    public function setDevice(string $device)
     {
-        $new_object = clone $this;
-
-        if ($new_object->_dState !== SERIAL_DEVICE_OPENED) {
-            if ($new_object->_os === "linux") {
+        if ($this->_dState !== SERIAL_DEVICE_OPENED) {
+            if ($this->_os === "linux") {
                 if (preg_match("@^COM(\\d+):?$@i", $device, $matches)) {
                     $device = "/dev/ttyS" . ($matches[1] - 1);
                 }
 
-                if ($new_object->_exec("stty -F " . $device) === 0) {
-                    $new_object->_device = $device;
-                    $new_object->_dState = SERIAL_DEVICE_SET;
+                if ($this->_exec("stty -F " . $device) === 0) {
+                    $this->_device = $device;
+                    $this->_dState = SERIAL_DEVICE_SET;
 
-                    return $new_object;
+                    return true;
                 }
-            } elseif ($new_object->_os === "osx") {
-                if ($new_object->_exec("stty -f " . $device) === 0) {
-                    $new_object->_device = $device;
-                    $new_object->_dState = SERIAL_DEVICE_SET;
+            } elseif ($this->_os === "osx") {
+                if ($this->_exec("stty -f " . $device) === 0) {
+                    $this->_device = $device;
+                    $this->_dState = SERIAL_DEVICE_SET;
 
-                    return $new_object;
+                    return true;
                 }
-            } elseif ($new_object->_os === "windows") {
+            } elseif ($this->_os === "windows") {
                 if (preg_match("@^COM(\\d+):?$@i", $device, $matches)
-                        and $new_object->_exec(
+                        and $this->_exec(
                             exec("mode " . $device . " xon=on BAUD=9600")
                         ) === 0
                 ) {
-                    $new_object->_winDevice = "COM" . $matches[1];
-                    $new_object->_device = "\\.com" . $matches[1];
-                    $new_object->_dState = SERIAL_DEVICE_SET;
+                    $this->_winDevice = "COM" . $matches[1];
+                    $this->_device = "\\.com" . $matches[1];
+                    $this->_dState = SERIAL_DEVICE_SET;
 
-                    return $new_object;
+                    return true;
                 }
             }
 
             trigger_error("Specified serial port is not valid", E_USER_WARNING);
 
-            return $new_object;
+            return false;
         }
 
         trigger_error("You must close your device before to set an other " .
                       "one", E_USER_WARNING);
 
-        return $new_object;
+        return false;
     }
 
     /**

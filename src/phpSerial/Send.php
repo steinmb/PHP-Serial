@@ -23,12 +23,18 @@ class Send implements SendInterface
      */
     public function send($message, $waitForReply = 0.1): void
     {
+        $this->setupDevice();
         $this->serialConnection->_buffer .= $message;
 
         if ($this->serialConnection->autoFlush === true) {
-            $this->serialflush();
+            $this->serialConnection->flush();
         }
 
         usleep((int) ($waitForReply * 1000000));
+    }
+
+    private function setupDevice(): void
+    {
+        $this->serialConnection->setDevice($this->serialConnection->_device);
     }
 }
