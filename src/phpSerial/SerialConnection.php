@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace steinmb\phpSerial;
+
 define ("SERIAL_DEVICE_NOTSET", 0);
 define ("SERIAL_DEVICE_SET", 1);
 define ("SERIAL_DEVICE_OPENED", 2);

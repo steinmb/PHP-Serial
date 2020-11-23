@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+namespace steinmb\phpSerial;
 
 class Receive implements ReceiveInterface
 {

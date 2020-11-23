@@ -1,7 +1,9 @@
 <?php declare(strict_types=1);
 
-interface SendInterface
+namespace steinmb\phpSerial;
+
+interface ReceiveInterface
 {
     public function __construct(SerialConnection $serialConnection);
-    public function send(): void;
+    public function readPort();
 }

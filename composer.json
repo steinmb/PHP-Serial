@@ -1,15 +1,17 @@
 {
-    "name": "blamebutton/php-serial",
+    "name": "steinmb/php-serial",
     "description": "Multi-platform serial port access convenience class",
     "license": "GPL-2.0-only",
     "authors": [
         {
-            "name": "Bram Ceulemans",
-            "email": "bramceulemans@me.com"
+            "name": "Steinmb",
+            "email": "steinmb@smbjorklund.com"
         }
     ],
     "minimum-stability": "stable",
     "autoload": {
-        "classmap": ["src/"]
+        "psr-4": {
+            "steinmb\\": "src/"
+        }
     }
 }
