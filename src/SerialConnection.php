@@ -41,7 +41,7 @@ final class SerialConnection
      *
      * @return bool
      */
-    public function setDevice($device): bool
+    public function setDevice(string $device): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
             if ($this->_os === "linux") {
@@ -231,26 +231,25 @@ final class SerialConnection
      *
      * @return bool
      */
-    public function setParity($parity): bool
+    public function setParity(string $parity): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error(
-                "Unable to set parity : the device is either not set or opened",
+                'Unable to set parity : the device is either not set or opened',
                 E_USER_WARNING
             );
 
             return false;
         }
 
-        $args = array(
-            "none" => "-parenb",
-            "odd"  => "parenb parodd",
-            "even" => "parenb -parodd",
-        );
+        $args = [
+            'none' => '-parenb',
+            'odd'  => 'parenb parodd',
+            'even' => 'parenb -parodd',
+        ];
 
         if (!isset($args[$parity])) {
             trigger_error("Parity mode not supported", E_USER_WARNING);
-
             return false;
         }
 
@@ -489,23 +488,6 @@ final class SerialConnection
         return true;
     }
 
-    /**
-     * Sends a string to the device
-     *
-     * @param $message
-     * @param float $waitForReply
-     *   time to wait for the reply (in seconds).
-     */
-    public function send($message, $waitForReply = 0.1): void
-    {
-        $this->_buffer .= $message;
-
-        if ($this->autoFlush === true) {
-            $this->serialflush();
-        }
-
-        usleep((int) ($waitForReply * 1000000));
-    }
 
     /**
      * Reads the port until no new datas are availible, then return the content.
@@ -604,35 +586,32 @@ final class SerialConnection
         return true;
     }
 
-    public function _ckClosed()
+    public function _ckClosed(): bool
     {
         if ($this->_dState === SERIAL_DEVICE_OPENED) {
-            trigger_error("Device must be closed", E_USER_WARNING);
-
+            trigger_error('Device must be closed', E_USER_WARNING);
             return false;
         }
 
         return true;
     }
 
-    public function _exec($cmd, &$out = null): int
+    private function _exec($cmd, &$out = null): int
     {
         $desc = [
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w'],
         ];
-
         $proc = proc_open($cmd, $desc, $pipes);
-
         $ret = stream_get_contents($pipes[1]);
         $err = stream_get_contents($pipes[2]);
-
         fclose($pipes[1]);
         fclose($pipes[2]);
-
         $retVal = proc_close($proc);
 
-        if (func_num_args() === 2) $out = array($ret, $err);
+        if (func_num_args() === 2) {
+            $out = array($ret, $err);
+        }
 
         return $retVal;
     }
