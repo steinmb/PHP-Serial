@@ -488,7 +488,6 @@ final class SerialConnection
         return true;
     }
 
-
     /**
      * Reads the port until no new datas are availible, then return the content.
      *

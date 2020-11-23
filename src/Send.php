@@ -1,8 +1,16 @@
-<?php
-
+<?php declare(strict_types=1);
 
 class Send implements SendInterface
 {
+    /**
+     * @var SerialConnection
+     */
+    private $serialConnection;
+
+    public function __construct(SerialConnection $serialConnection)
+    {
+        $this->serialConnection = $serialConnection;
+    }
 
     /**
      * Sends a string to the device
@@ -13,9 +21,9 @@ class Send implements SendInterface
      */
     public function send($message, $waitForReply = 0.1): void
     {
-        $this->_buffer .= $message;
+        $this->serialConnection->_buffer .= $message;
 
-        if ($this->autoFlush === true) {
+        if ($this->serialConnection->autoFlush === true) {
             $this->serialflush();
         }
 
