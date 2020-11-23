@@ -60,6 +60,12 @@ final class SerialConnection
     {
         $this->operatingSystem = $operatingSystem;
         $this->_device = $device;
+
+        if (!isset(self::VALID_BAUDS[$baudRate])) {
+            throw InvalidSerialException::invalidBaudRate(
+                self::VALID_BAUDS, $baudRate
+            );
+        }
         $this->baudRate = $baudRate;
         $this->parity = $parity;
         $this->characterLength = $characterLength;
@@ -209,12 +215,12 @@ final class SerialConnection
         if (isset(self::VALID_BAUDS[$rate])) {
             if ($this->_os === "linux") {
                 $ret = $this->_exec(
-                    "stty -F " . $this->_device . " " . (int) $rate,
+                    "stty -F " . $this->_device . " " . $rate,
                     $out
                 );
             } elseif ($this->_os === "osx") {
                 $ret = $this->_exec(
-                    "stty -f " . $this->_device . " " . (int) $rate,
+                    "stty -f " . $this->_device . " " . $rate,
                     $out
                 );
             } elseif ($this->_os === "windows") {
@@ -227,12 +233,9 @@ final class SerialConnection
             }
 
             if ($ret !== 0) {
-                trigger_error(
-                    "Unable to set baud rate: " . $out[1],
-                    E_USER_WARNING
+                throw new RuntimeException(
+                    'Unable to set baud rate: ' . $rate
                 );
-
-                return false;
             }
 
             return true;

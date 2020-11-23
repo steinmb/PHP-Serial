@@ -18,4 +18,4 @@ $com1 = new SerialConnection(
 );
 
 $senderService = new Send($com1);
-$senderService->send('Foo bar');
+//$senderService->send('Foo bar');
