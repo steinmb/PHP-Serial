@@ -6,7 +6,7 @@ use steinmb\phpSerial\SerialConnection;
 use steinmb\phpSerial\System;
 
 $clientSystem = new System();
-$serial = new SerialConnection(
+$com1 = new SerialConnection(
     new System(),
     'com1',
     38400,
@@ -15,3 +15,5 @@ $serial = new SerialConnection(
     1,
     'none'
 );
+
+$com2 = $com1->setDevice('com2');
