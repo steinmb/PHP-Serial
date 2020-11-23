@@ -14,8 +14,8 @@ class System
         if (strpos($sysName, 'Linux') === 0) {
             $this->operatingSystem = 'linux';
 
-            if ($this->_exec("stty") === 0) {
-                register_shutdown_function(array($this, 'deviceClose'));
+            if (exec("stty") === 0) {
+                $this->shutdown();
             } else {
                 trigger_error(
                     'No stty available, unable to run.',
@@ -24,15 +24,20 @@ class System
             }
         } elseif (strpos($sysName, 'Darwin') === 0) {
             $this->_os = 'osx';
-            register_shutdown_function(array($this, 'deviceClose'));
+            $this->shutdown();
         } elseif (strpos($sysName, 'Windows') === 0) {
             $this->_os = 'windows';
-            register_shutdown_function(array($this, 'deviceClose'));
+            $this->shutdown();
         } else {
             trigger_error(
                 'Unknown host OS, unable to run.',
                 E_USER_ERROR
             );
         }
+    }
+
+    private function shutdown(): void
+    {
+        register_shutdown_function(array($this, 'deviceClose'));
     }
 }
