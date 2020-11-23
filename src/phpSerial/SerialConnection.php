@@ -2,6 +2,8 @@
 
 namespace steinmb\phpSerial;
 
+use RuntimeException;
+
 define ("SERIAL_DEVICE_NOTSET", 0);
 define ("SERIAL_DEVICE_SET", 1);
 define ("SERIAL_DEVICE_OPENED", 2);
@@ -11,6 +13,20 @@ define ("SERIAL_DEVICE_OPENED", 2);
  */
 final class SerialConnection
 {
+    private const VALID_BAUDS = [
+        110    => 11,
+        150    => 15,
+        300    => 30,
+        600    => 60,
+        1200   => 12,
+        2400   => 24,
+        4800   => 48,
+        9600   => 96,
+        19200  => 19,
+        38400  => 38400,
+        57600  => 57600,
+        115200 => 115200,
+    ];
     public $_device;
     public $baudRate;
     public $parity;
@@ -97,12 +113,12 @@ final class SerialConnection
                 }
             }
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'Specified serial port is not valid.'
             );
         }
 
-        throw new \RuntimeException(
+        throw new RuntimeException(
             'You must close your device before to set an other.'
         );
     }
@@ -176,39 +192,21 @@ final class SerialConnection
     }
 
     /**
-     * Configure the Baud Rate
-     * Possible rates : 110, 150, 300, 600, 1200, 2400, 4800, 9600, 38400,
-     * 57600 and 115200.
+     * Configure the Baud Rate.
      *
-     * @param  int  $rate the rate to set the port in
-     *
-     * @return bool
+     * @param int $rate
+     *  The rate to set the port in.
      */
-    public function setBaudRate($rate): bool
+    public function setBaudRate(int $rate): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
-            trigger_error("Unable to set the baud rate : the device is " .
-                          "either not set or opened", E_USER_WARNING);
-
-            return false;
+            throw new RuntimeException(
+                'Unable to set the baud rate to ' . $rate .
+                ' The device is either not set or opened'
+            );
         }
 
-        $validBauds = array (
-            110    => 11,
-            150    => 15,
-            300    => 30,
-            600    => 60,
-            1200   => 12,
-            2400   => 24,
-            4800   => 48,
-            9600   => 96,
-            19200  => 19,
-            38400  => 38400,
-            57600  => 57600,
-            115200 => 115200
-        );
-
-        if (isset($validBauds[$rate])) {
+        if (isset(self::VALID_BAUDS[$rate])) {
             if ($this->_os === "linux") {
                 $ret = $this->_exec(
                     "stty -F " . $this->_device . " " . (int) $rate,
@@ -221,7 +219,7 @@ final class SerialConnection
                 );
             } elseif ($this->_os === "windows") {
                 $ret = $this->_exec(
-                    "mode " . $this->_winDevice . " BAUD=" . $validBauds[$rate],
+                    "mode " . $this->_winDevice . " BAUD=" . self::VALID_BAUDS[$rate],
                     $out
                 );
             } else {
@@ -573,7 +571,4 @@ final class SerialConnection
         return $retVal;
     }
 
-    private function serialflush()
-    {
-    }
 }
