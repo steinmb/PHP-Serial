@@ -12,11 +12,11 @@ define ("SERIAL_DEVICE_OPENED", 2);
 final class SerialConnection
 {
     public $_device;
-    private $baudRate;
-    private $parity;
-    private $characterLength;
-    private $stopBits;
-    private $flowControl;
+    public $baudRate;
+    public $parity;
+    public $characterLength;
+    public $stopBits;
+    public $flowControl;
     public $_winDevice;
     public $_dHandle;
     public $_dState = SERIAL_DEVICE_NOTSET;
@@ -55,6 +55,7 @@ final class SerialConnection
     {
         $new_object = clone $this;
         $new_object->setDevice($device);
+
         return $new_object;
     }
 
@@ -66,10 +67,8 @@ final class SerialConnection
      *     with linux)
      *
      * @param  string $device the name of the device to be used
-     *
-     * @return
      */
-    public function setDevice(string $device)
+    public function setDevice(string $device): void
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
             if ($this->_os === "linux") {
@@ -80,15 +79,11 @@ final class SerialConnection
                 if ($this->_exec("stty -F " . $device) === 0) {
                     $this->_device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
-
-                    return true;
                 }
             } elseif ($this->_os === "osx") {
                 if ($this->_exec("stty -f " . $device) === 0) {
                     $this->_device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
-
-                    return true;
                 }
             } elseif ($this->_os === "windows") {
                 if (preg_match("@^COM(\\d+):?$@i", $device, $matches)
@@ -99,20 +94,17 @@ final class SerialConnection
                     $this->_winDevice = "COM" . $matches[1];
                     $this->_device = "\\.com" . $matches[1];
                     $this->_dState = SERIAL_DEVICE_SET;
-
-                    return true;
                 }
             }
 
-            trigger_error("Specified serial port is not valid", E_USER_WARNING);
-
-            return false;
+            throw new \RuntimeException(
+                'Specified serial port is not valid.'
+            );
         }
 
-        trigger_error("You must close your device before to set an other " .
-                      "one", E_USER_WARNING);
-
-        return false;
+        throw new \RuntimeException(
+            'You must close your device before to set an other.'
+        );
     }
 
     /**
@@ -121,7 +113,7 @@ final class SerialConnection
      * @param  string $mode Opening mode : same parameter as fopen()
      * @return bool
      */
-    public function open($mode = "r+b")
+    public function open($mode = "r+b"): bool
     {
         if ($this->_dState === SERIAL_DEVICE_OPENED) {
             trigger_error("The device is already opened", E_USER_NOTICE);
