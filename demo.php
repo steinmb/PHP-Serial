@@ -2,10 +2,11 @@
 
 include_once __DIR__ . '/vendor/autoload.php';
 
+use steinmb\phpSerial\SerialConnection;
 use steinmb\phpSerial\System;
 
 $clientSystem = new System();
-$serial = new \steinmb\phpSerial\SerialConnection(
+$serial = new SerialConnection(
     new System(),
     'com1',
     38400,
