@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 
 class Receive implements ReceiveInterface
@@ -11,10 +11,12 @@ class Receive implements ReceiveInterface
     }
 
     /**
-     * Reads the port until no new datas are availible, then return the content.
+     * Reads the port until no new data are available, then return the content.
      *
-     * @param int $count Number of characters to be read (will stop before
-     *                   if less characters are in the buffer)
+     * @param int $count
+     *  Number of characters to be read (will stop before
+     *  if less characters are in the buffer).
+     *
      * @return string
      */
     public function readPort($count = 0)
@@ -25,49 +27,36 @@ class Receive implements ReceiveInterface
         }
 
         if ($this->serialConnection->_os === "linux" || $this->serialConnection->_os === "osx") {
-            // Behavior in OSX isn't to wait for new data to recover, but just
-            // grabs what's there!
-            // Doesn't always work perfectly for me in OSX
-            $content = ""; $i = 0;
-
-            if ($count !== 0) {
-                do {
-                    if ($i > $count) {
-                        $content .= fread($this->serialConnection->_dHandle, ($count - $i));
-                    } else {
-                        $content .= fread($this->serialConnection->_dHandle, 128);
-                    }
-                } while (($i += 128) === strlen($content));
-            } else {
-                do {
-                    $content .= fread($this->serialConnection->_dHandle, 128);
-                } while (($i += 128) === strlen($content));
-            }
-
-            return $content;
+            return $this->read();
         }
 
         if ($this->serialConnection->_os === "windows") {
-            // Windows port reading procedures still buggy
-            $content = ""; $i = 0;
-
-            if ($count !== 0) {
-                do {
-                    if ($i > $count) {
-                        $content .= fread($this->serialConnection->_dHandle, ($count - $i));
-                    } else {
-                        $content .= fread($this->serialConnection->_dHandle, 128);
-                    }
-                } while (($i += 128) === strlen($content));
-            } else {
-                do {
-                    $content .= fread($this->serialConnection->_dHandle, 128);
-                } while (($i += 128) === strlen($content));
-            }
-
-            return $content;
+            return $this->read();
         }
 
         return false;
+    }
+
+    private function read(): string
+    {
+        $content = '';
+        $count = 0;
+        $i = 0;
+
+        if ($count !== 0) {
+            do {
+                if ($i > $count) {
+                    $content .= fread($this->serialConnection->_dHandle, ($count - $i));
+                } else {
+                    $content .= fread($this->serialConnection->_dHandle, 128);
+                }
+            } while (($i += 128) === strlen($content));
+        } else {
+            do {
+                $content .= fread($this->serialConnection->_dHandle, 128);
+            } while (($i += 128) === strlen($content));
+        }
+
+        return $content;
     }
 }
