@@ -18,5 +18,4 @@ $com1 = new SerialConnection(
 );
 
 $senderService = new Send($com1);
-
-$com2 = $com1->changeDevice('com2');
+$senderService->send('Foo bar');

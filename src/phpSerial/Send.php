@@ -36,5 +36,7 @@ class Send implements SendInterface
     private function setupDevice(): void
     {
         $this->serialConnection->setDevice($this->serialConnection->_device);
+        $this->serialConnection->setBaudRate($this->serialConnection->baudRate);
+        $this->serialConnection->setParity($this->serialConnection->pa);
     }
 }
