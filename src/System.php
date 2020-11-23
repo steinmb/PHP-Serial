@@ -4,6 +4,7 @@
 class System
 {
     public $operatingSystem;
+    public $_os;
 
     public function __construct()
     {
@@ -13,13 +14,13 @@ class System
 
         if (strpos($sysName, 'Linux') === 0) {
             $this->operatingSystem = 'linux';
+            $this->_os = 'linux';
 
             if (exec("stty") === 0) {
                 $this->shutdown();
             } else {
-                trigger_error(
-                    'No stty available, unable to run.',
-                    E_USER_ERROR
+                throw new Exception(
+                    'No stty available, unable to run.'
                 );
             }
         } elseif (strpos($sysName, 'Darwin') === 0) {
