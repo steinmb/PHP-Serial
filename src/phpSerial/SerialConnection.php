@@ -12,11 +12,16 @@ define ("SERIAL_DEVICE_OPENED", 2);
 final class SerialConnection
 {
     public $_device;
+    private $baudRate;
+    private $parity;
+    private $characterLength;
+    private $stopBits;
+    private $flowControl;
     public $_winDevice;
     public $_dHandle;
     public $_dState = SERIAL_DEVICE_NOTSET;
     public $_buffer = "";
-    public $_os = "";
+    public $_os;
     private $operatingSystem;
 
     /**
@@ -27,9 +32,23 @@ final class SerialConnection
      */
     public $autoFlush = true;
 
-    public function __construct(System $operatingSystem)
+    public function __construct(
+        System $operatingSystem,
+        string $device,
+        int $baudRate,
+        string $parity,
+        int $characterLength,
+        int $stopBits,
+        string $flowControl
+    )
     {
         $this->operatingSystem = $operatingSystem;
+        $this->_device = $device;
+        $this->baudRate = $baudRate;
+        $this->parity = $parity;
+        $this->characterLength = $characterLength;
+        $this->stopBits = $stopBits;
+        $this->flowControl = $flowControl;
     }
 
     /**

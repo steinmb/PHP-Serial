@@ -6,5 +6,11 @@ use steinmb\phpSerial\System;
 
 $clientSystem = new System();
 $serial = new \steinmb\phpSerial\SerialConnection(
-    new System()
+    new System(),
+    'com1',
+    38400,
+    'none',
+    8,
+    1,
+    'none'
 );
