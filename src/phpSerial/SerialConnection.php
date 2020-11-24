@@ -124,6 +124,17 @@ final class SerialConnection
         return $new_object;
     }
 
+    public function connect(string $mode)
+    {
+        $this->setDevice($this->_device);
+        $this->setBaudRate($this->baudRate);
+        $this->setParity($this->parity);
+        $this->setCharacterLength($this->characterLength);
+        $this->setStopBits($this->stopBits);
+        $this->setFlowControl($this->flowControl);
+        $this->open($mode);
+    }
+
     /**
      * Device set function : used to set the device name/address.
      * -> linux : use the device address, like /dev/ttyS0
@@ -133,7 +144,7 @@ final class SerialConnection
      *
      * @param  string $device the name of the device to be used
      */
-    public function setDevice(string $device): void
+    private function setDevice(string $device): void
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
             if ($this->machine->operatingSystem() === 'linux') {
@@ -151,7 +162,7 @@ final class SerialConnection
                     $this->_device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
                 }
-            } elseif ($this->machine->operatingSystem() === "osx") {
+            } elseif ($this->machine->operatingSystem() === 'osx') {
                 if ($this->_exec("stty -f " . $device) === 0) {
                     $this->_device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
@@ -184,7 +195,7 @@ final class SerialConnection
      * @param  string $mode Opening mode : same parameter as fopen()
      * @return bool
      */
-    public function open($mode = "r+b"): bool
+    private function open($mode = 'r+b'): bool
     {
         if ($this->_dState === SERIAL_DEVICE_OPENED) {
             trigger_error("The device is already opened", E_USER_NOTICE);
@@ -230,7 +241,7 @@ final class SerialConnection
      *
      * @return bool
      */
-    public function close(): bool
+    private function close(): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
             return true;
@@ -252,7 +263,7 @@ final class SerialConnection
      * @param int $rate
      *  The rate to set the port in.
      */
-    public function setBaudRate(int $rate): void
+    private function setBaudRate(int $rate): void
     {
         $this->deviceStatus('baud rate', $rate);
 
@@ -300,7 +311,7 @@ final class SerialConnection
      *
      * @param  string $parity
      */
-    public function setParity(string $parity): void
+    private function setParity(string $parity): void
     {
         $this->deviceStatus('parity', $parity);
 
@@ -327,7 +338,7 @@ final class SerialConnection
      *
      * @return bool
      */
-    public function setCharacterLength(int $int): bool
+    private function setCharacterLength(int $int): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set length of a character : the device " .
@@ -378,7 +389,7 @@ final class SerialConnection
      * It must be either 1, 1.5 or 2.
      * 1.5 is not supported under some windows computers and Linux.
      */
-    public function setStopBits(float $length): void
+    private function setStopBits(float $length): void
     {
         $this->deviceStatus('stop bits', $length);
         if ($this->machine->operatingSystem() !== 'windows') {
@@ -406,7 +417,7 @@ final class SerialConnection
      *  -> "rts/cts" : use RTS/CTS handshaking
      *  -> "xon/xoff" : use XON/XOFF protocol
      */
-    public function setFlowControl(string $mode): void
+    private function setFlowControl(string $mode): void
     {
         $this->deviceStatus('flow control', $mode);
 
@@ -439,7 +450,7 @@ final class SerialConnection
      *
      * @return bool
      */
-    public function setSetSerialFlag(string $param, string $arg = ''): bool
+    private function setSetSerialFlag(string $param, string $arg = ''): bool
     {
         if (!$this->_ckOpened()) {
             return false;
@@ -478,7 +489,7 @@ final class SerialConnection
         }
     }
 
-    public function _ckOpened(): bool
+    private function _ckOpened(): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
             trigger_error("Device must be opened", E_USER_WARNING);
@@ -489,7 +500,7 @@ final class SerialConnection
         return true;
     }
 
-    public function _ckClosed(): bool
+    private function _ckClosed(): bool
     {
         if ($this->_dState === SERIAL_DEVICE_OPENED) {
             trigger_error('Device must be closed', E_USER_WARNING);
