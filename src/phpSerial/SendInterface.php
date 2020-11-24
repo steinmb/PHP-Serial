@@ -5,5 +5,5 @@ namespace steinmb\phpSerial;
 interface SendInterface
 {
     public function __construct(SerialConnection $serialConnection);
-    public function send($message, $waitForReply): void;
+    public function send(string $message, float $waitForReply): void;
 }

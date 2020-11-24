@@ -33,7 +33,7 @@ final class SerialConnection
         'odd'  => 'parenb parodd',
         'even' => 'parenb -parodd',
     ];
-    private const VALID_STOP_BIT = [1, 1.5, 2];
+    private const VALID_STOP_BIT = [1.0, 1.5, 2.0,];
     private const VALID_FLOW_CONTROL = [
         'none'     => 'clocal -crtscts -ixon -ixoff',
         'rts/cts'  => '-clocal crtscts -ixon -ixoff',

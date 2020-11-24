@@ -7,7 +7,7 @@ use steinmb\phpSerial\SerialConnection;
 use steinmb\phpSerial\System;
 
 $clientSystem = new System();
-$com1 = new SerialConnection(
+$port1 = new SerialConnection(
     new System(),
     'com1',
     38400,
@@ -17,5 +17,5 @@ $com1 = new SerialConnection(
     'none'
 );
 
-$senderService = new Send($com1);
-//$senderService->send('Foo bar');
+$senderService = new Send($port1);
+$senderService->send('Foo bar');
