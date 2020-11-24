@@ -203,15 +203,9 @@ final class SerialConnection
      * @param int $rate
      *  The rate to set the port in.
      */
-    public function setBaudRate(int $rate)
+    public function setBaudRate(int $rate): void
     {
-        if ($this->_dState !== SERIAL_DEVICE_SET) {
-            throw new RuntimeException(
-                'Unable to set the baud rate to ' . $rate .
-                ' The device is either not set or opened'
-            );
-        }
-
+        $this->deviceStatus('baud rate', $rate);
         $result = 0;
         if (!$this->operatingSystem->_os !== 'windows') {
             $result = $this->writeBaudRate($rate);
@@ -229,6 +223,16 @@ final class SerialConnection
         }
     }
 
+    private function deviceStatus($message, $value)
+    {
+        if ($this->_dState !== SERIAL_DEVICE_SET) {
+            throw new RuntimeException(
+                'Unable to set ' . $message . ' to ' . $value .
+                ' The device is either not set or opened.'
+            );
+        }
+    }
+
     private function writeBaudRate(int $baudRate): int
     {
         return $this->_exec(
@@ -237,8 +241,8 @@ final class SerialConnection
     }
 
     /**
-     * Configure parity.
-     * Modes : odd, even, none
+     * Set parity.
+     * Valid modes: odd, even, none.
      *
      * @param  string $parity one of the modes
      *
@@ -246,15 +250,7 @@ final class SerialConnection
      */
     public function setParity(string $parity): bool
     {
-        if ($this->_dState !== SERIAL_DEVICE_SET) {
-            trigger_error(
-                'Unable to set parity : the device is either not set or opened',
-                E_USER_WARNING
-            );
-
-            return false;
-        }
-
+        $this->deviceStatus('parity', $parity);
         $args = [
             'none' => '-parenb',
             'odd'  => 'parenb parodd',
@@ -355,13 +351,7 @@ final class SerialConnection
      */
     public function setStopBits($length): bool
     {
-        if ($this->_dState !== SERIAL_DEVICE_SET) {
-            trigger_error("Unable to set the length of a stop bit : the " .
-                          "device is either not set or opened", E_USER_WARNING);
-
-            return false;
-        }
-
+        $this->deviceStatus('stop bits', $length);
         if ($length !== 1
                 and $length !== 2
                 and $length !== 1.5
@@ -417,12 +407,7 @@ final class SerialConnection
      */
     public function setFlowControl($mode): ?bool
     {
-        if ($this->_dState !== SERIAL_DEVICE_SET) {
-            trigger_error("Unable to set flow control mode : the device is " .
-                          "either not set or opened", E_USER_WARNING);
-
-            return false;
-        }
+        $this->deviceStatus('flow control', $mode);
 
         $linuxModes = array(
             "none"     => "clocal -crtscts -ixon -ixoff",
