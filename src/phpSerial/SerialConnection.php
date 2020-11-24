@@ -203,7 +203,7 @@ final class SerialConnection
      * @param int $rate
      *  The rate to set the port in.
      */
-    public function setBaudRate(int $rate): bool
+    public function setBaudRate(int $rate)
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             throw new RuntimeException(
@@ -212,28 +212,24 @@ final class SerialConnection
             );
         }
 
-        $ret = 0;
-        if ($this->operatingSystem->_os === 'linux') {
-            $ret = $this->writeBaudRate($rate);
-        } elseif ($this->operatingSystem->_os === 'osx') {
-            $ret = $this->writeBaudRate($rate);
-        } elseif ($this->operatingSystem->_os === 'windows') {
-            $ret = $this->_exec(
+        $result = 0;
+        if (!$this->operatingSystem->_os !== 'windows') {
+            $result = $this->writeBaudRate($rate);
+        } else {
+            $result = $this->_exec(
                 "mode " . $this->_winDevice . ' BAUD=' . self::VALID_BAUDS[$rate],
                 $out
             );
         }
 
-        if ($ret !== 0) {
+        if ($result !== 0) {
             throw new RuntimeException(
                 'Unable to set baud rate: ' . $rate
             );
         }
-
-        return true;
     }
 
-    private function writeBaudRate(int $baudRate)
+    private function writeBaudRate(int $baudRate): int
     {
         return $this->_exec(
             "stty -F " . $this->_device . " " . $baudRate,
