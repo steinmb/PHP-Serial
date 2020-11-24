@@ -27,6 +27,11 @@ final class SerialConnection
         57600  => 57600,
         115200 => 115200,
     ];
+    private const VALID_PARITY = [
+        'none' => '-parenb',
+        'odd'  => 'parenb parodd',
+        'even' => 'parenb -parodd',
+    ];
     public $_device;
     public $baudRate;
     public $parity;
@@ -67,6 +72,12 @@ final class SerialConnection
             );
         }
         $this->baudRate = $baudRate;
+
+        if (!isset(self::VALID_PARITY[$parity])) {
+            throw new \InvalidArgumentException(
+                'Unknown parity mode: ' . $parity
+            );
+        }
         $this->parity = $parity;
         $this->characterLength = $characterLength;
         $this->stopBits = $stopBits;
@@ -246,18 +257,9 @@ final class SerialConnection
      *
      * @param  string $parity
      */
-    public function setParity(string $parity)
+    public function setParity(string $parity): void
     {
         $this->deviceStatus('parity', $parity);
-        $args = [
-            'none' => '-parenb',
-            'odd'  => 'parenb parodd',
-            'even' => 'parenb -parodd',
-        ];
-
-        if (!isset($args[$parity])) {
-            trigger_error("Parity mode not supported", E_USER_WARNING);
-        }
 
         if ($this->operatingSystem->_os !== 'windows') {
             $result = $this->write($args[$parity]);
