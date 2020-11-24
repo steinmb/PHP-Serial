@@ -376,8 +376,8 @@ final class SerialConnection
      * Sets the length of stop bits.
      *
      * @param  float $length the length of a stop bit.
-     * It must be either 1, 1.5 or 2. 1.5 is not supported
-     * under linux and on some computers.
+     * It must be either 1, 1.5 or 2.
+     * 1.5 is not supported under some windows computers and Linux.
      */
     public function setStopBits(float $length): void
     {
@@ -436,6 +436,8 @@ final class SerialConnection
      * @param  string $param parameter name
      * @param  string $arg   parameter value
      *
+     * @deprecated No longer supported.
+     *
      * @return bool
      */
     public function setSetSerialFlag(string $param, string $arg = '')
@@ -477,7 +479,7 @@ final class SerialConnection
         }
     }
 
-    public function _ckOpened()
+    public function _ckOpened(): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
             trigger_error("Device must be opened", E_USER_WARNING);
