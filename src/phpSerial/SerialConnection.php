@@ -136,6 +136,12 @@ final class SerialConnection
      */
     public function setDevice(string $device): void
     {
+        if (exec("stty") !== 0) {
+            throw new RuntimeException(
+                'No stty available, unable setup device: ' , $device
+            );
+        }
+
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
             if ($this->_os === "linux") {
                 if (preg_match("@^COM(\\d+):?$@i", $device, $matches)) {

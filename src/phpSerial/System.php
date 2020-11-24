@@ -17,12 +17,6 @@ final class System
         if (strpos($sysName, 'Linux') === 0) {
             $this->operatingSystem = 'linux';
             $this->_os = 'linux';
-
-            if (exec("stty") !== 0) {
-                throw new RuntimeException(
-                    'No stty available, unable to run.'
-                );
-            }
         } elseif (strpos($sysName, 'Darwin') === 0) {
             $this->_os = 'osx';
             return;
