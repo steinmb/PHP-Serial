@@ -279,8 +279,13 @@ final class SerialConnection
 
     private function write($value): int
     {
+        $command = 'stty -F';
+        if ($this->operatingSystem->_os === 'osx') {
+            $command = 'stty -f';
+        }
+
         return $this->_exec(
-            "stty -F " . $this->_device . " " . $value,
+            $command . ' ' . $this->_device . ' ' . $value,
             $out);
     }
 
