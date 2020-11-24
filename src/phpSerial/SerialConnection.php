@@ -33,6 +33,7 @@ final class SerialConnection
         'odd'  => 'parenb parodd',
         'even' => 'parenb -parodd',
     ];
+    private const VALID_STOP_BIT = [1, 1.5, 2];
     public $_device;
     public $baudRate;
     public $parity;
@@ -60,7 +61,7 @@ final class SerialConnection
         int $baudRate,
         string $parity,
         int $characterLength,
-        int $stopBits,
+        float $stopBits,
         string $flowControl
     )
     {
@@ -81,6 +82,19 @@ final class SerialConnection
         }
         $this->parity = $parity;
         $this->characterLength = $characterLength;
+
+        if (!in_array($stopBits, self::VALID_STOP_BIT, true)) {
+            throw new InvalidArgumentException(
+                'Invalid stop bit value: ' . $stopBits
+            );
+        }
+
+        if ($stopBits === 1.5 && $this->operatingSystem->_os === 'linux') {
+            throw new InvalidArgumentException(
+                'Linux do not support: ' . $stopBits . ' setting.'
+            );
+
+        }
         $this->stopBits = $stopBits;
         $this->flowControl = $flowControl;
     }
@@ -336,37 +350,12 @@ final class SerialConnection
      * @param  float $length the length of a stop bit.
      * It must be either 1, 1.5 or 2. 1.5 is not supported
      * under linux and on some computers.
-     *
-     * @return bool
      */
-    public function setStopBits($length): bool
+    public function setStopBits(float $length): void
     {
         $this->deviceStatus('stop bits', $length);
-        if ($length !== 1
-                and $length !== 2
-                and $length !== 1.5
-                and !($length === 1.5 and $this->_os === 'linux')
-        ) {
-            trigger_error(
-                "Specified stop bit length is invalid",
-                E_USER_WARNING
-            );
-
-            return false;
-        }
-
-        if ($this->_os === "linux") {
-            $ret = $this->_exec(
-                "stty -F " . $this->_device . " " .
-                    (($length === 1) ? "-" : "") . 'cstopb',
-                $out
-            );
-        } elseif ($this->_os === 'osx') {
-            $ret = $this->_exec(
-                "stty -f " . $this->_device . " " .
-                    (($length === 1) ? "-" : "") . "cstopb",
-                $out
-            );
+        if ($this->operatingSystem->_os !== 'windows') {
+            $this->write(' ' . (($length === 1) ? "-" : "") . 'cstopb');
         } else {
             $ret = $this->_exec(
                 "mode " . $this->_winDevice . " STOP=" . $length,
@@ -374,16 +363,11 @@ final class SerialConnection
             );
         }
 
-        if ($ret === 0) {
-            return true;
+        if ($ret !== 0) {
+            throw new RuntimeException(
+                'Unable to set stop bits to: ' . $length
+            );
         }
-
-        trigger_error(
-            "Unable to set stop bit length : " . $out[1],
-            E_USER_WARNING
-        );
-
-        return false;
     }
 
     /**
