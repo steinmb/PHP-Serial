@@ -2,6 +2,8 @@
 
 namespace steinmb\phpSerial;
 
+use RuntimeException;
+
 final class Receive implements ReceiveInterface
 {
     private $serialConnection;
@@ -20,28 +22,20 @@ final class Receive implements ReceiveInterface
      *
      * @return string
      */
-    public function readPort($count = 0)
+    public function readPort(int $count = 0): string
     {
         if ($this->serialConnection->_dState !== SERIAL_DEVICE_OPENED) {
-            trigger_error("Device must be opened to read it", E_USER_WARNING);
-            return false;
+            throw new RuntimeException(
+                'Device must be opened to read it.'
+            );
         }
 
-        if ($this->serialConnection->_os === "linux" || $this->serialConnection->_os === "osx") {
-            return $this->read();
-        }
-
-        if ($this->serialConnection->_os === "windows") {
-            return $this->read();
-        }
-
-        return false;
+        return $this->read($count);
     }
 
-    private function read(): string
+    private function read(int $count): string
     {
         $content = '';
-        $count = 0;
         $i = 0;
 
         if ($count !== 0) {
