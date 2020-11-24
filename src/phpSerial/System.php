@@ -15,10 +15,15 @@ final class System
 
         if (strpos($sysName, 'Linux') === 0) {
             $this->operatingSystem = 'linux';
-        } elseif (strpos($sysName, 'Darwin') === 0) {
+            return;
+        }
+
+        if (strpos($sysName, 'Darwin') === 0) {
             $this->operatingSystem = 'osx';
             return;
-        } elseif (strpos($sysName, 'Windows') === 0) {
+        }
+
+        if (strpos($sysName, 'Windows') === 0) {
             $this->operatingSystem = 'windows';
             return;
         }
