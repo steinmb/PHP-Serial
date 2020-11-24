@@ -54,7 +54,6 @@ final class SerialConnection
     public $_dHandle;
     public $_dState = SERIAL_DEVICE_NOTSET;
     public $_buffer = "";
-    public $_os;
     private $operatingSystem;
 
     /**
@@ -137,7 +136,7 @@ final class SerialConnection
     public function setDevice(string $device): void
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
-            if ($this->_os === "linux") {
+            if ($this->operatingSystem->_os === "linux") {
                 if (exec("stty") !== 0) {
                     throw new RuntimeException(
                         'No stty available, unable setup device: ' , $device
@@ -152,12 +151,12 @@ final class SerialConnection
                     $this->_device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
                 }
-            } elseif ($this->_os === "osx") {
+            } elseif ($this->operatingSystem->_os === "osx") {
                 if ($this->_exec("stty -f " . $device) === 0) {
                     $this->_device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
                 }
-            } elseif ($this->_os === "windows") {
+            } elseif ($this->operatingSystem->_os === "windows") {
                 if (preg_match("@^COM(\\d+):?$@i", $device, $matches)
                         and $this->_exec(
                             exec("mode " . $device . " xon=on BAUD=9600")
@@ -344,12 +343,12 @@ final class SerialConnection
             $int = 8;
         }
 
-        if ($this->_os === "linux") {
+        if ($this->operatingSystem->_os === "linux") {
             $ret = $this->_exec(
                 "stty -F " . $this->_device . " cs" . $int,
                 $out
             );
-        } elseif ($this->_os === "osx") {
+        } elseif ($this->operatingSystem->_os === "osx") {
             $ret = $this->_exec(
                 "stty -f " . $this->_device . " cs" . $int,
                 $out
@@ -444,7 +443,7 @@ final class SerialConnection
     }
 
     /**
-     * Sets a setserial parameter (cf man setserial)
+     * Sets a setserial parameter (man setserial)
      * NO MORE USEFUL !
      * 	-> No longer supported
      * 	-> Only use it if you need it
