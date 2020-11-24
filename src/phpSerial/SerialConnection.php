@@ -355,15 +355,15 @@ final class SerialConnection
     {
         $this->deviceStatus('stop bits', $length);
         if ($this->operatingSystem->_os !== 'windows') {
-            $this->write(' ' . (($length === 1) ? "-" : "") . 'cstopb');
+            $result = $this->write(' ' . (($length === 1) ? "-" : "") . 'cstopb');
         } else {
-            $ret = $this->_exec(
+            $result = $this->_exec(
                 "mode " . $this->_winDevice . " STOP=" . $length,
                 $out
             );
         }
 
-        if ($ret !== 0) {
+        if ($result !== 0) {
             throw new RuntimeException(
                 'Unable to set stop bits to: ' . $length
             );
