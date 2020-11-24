@@ -410,21 +410,6 @@ final class SerialConnection
     public function setFlowControl(string $mode): void
     {
         $this->deviceStatus('flow control', $mode);
-//
-//        $linuxModes = array(
-//            "none"     => "clocal -crtscts -ixon -ixoff",
-//            "rts/cts"  => "-clocal crtscts -ixon -ixoff",
-//            "xon/xoff" => "-clocal -crtscts ixon ixoff"
-//        );
-//        $windowsModes = array(
-//            "none"     => "xon=off octs=off rts=on",
-//            "rts/cts"  => "xon=off octs=on rts=hs",
-//            "xon/xoff" => "xon=on octs=off rts=on",
-//        );
-
-//        if ($mode !== "none" and $mode !== "rts/cts" and $mode !== "xon/xoff") {
-//            trigger_error("Invalid flow control mode specified", E_USER_ERROR);
-//        }
 
         if ($this->operatingSystem->_os !== 'windows') {
             $result = $this->write(self::VALID_FLOW_CONTROL[$mode]);
