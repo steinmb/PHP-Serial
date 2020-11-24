@@ -2,7 +2,7 @@
 
 namespace steinmb\phpSerial;
 
-use Exception;
+use RuntimeException;
 
 final class System
 {
@@ -19,19 +19,20 @@ final class System
             $this->_os = 'linux';
 
             if (exec("stty") !== 0) {
-                throw new Exception(
+                throw new RuntimeException(
                     'No stty available, unable to run.'
                 );
             }
         } elseif (strpos($sysName, 'Darwin') === 0) {
             $this->_os = 'osx';
+            return;
         } elseif (strpos($sysName, 'Windows') === 0) {
             $this->_os = 'windows';
-        } else {
-            trigger_error(
-                'Unknown host OS, unable to run.',
-                E_USER_ERROR
-            );
+            return;
         }
+
+        throw new RuntimeException(
+            'Unknown operation system.'
+        );
     }
 }
