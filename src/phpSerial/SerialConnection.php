@@ -371,15 +371,15 @@ final class SerialConnection
     }
 
     /**
-     * Configures the flow control
+     * Configures the flow control.
      *
-     * @param  string $mode Set the flow control mode. Available modes :
-     *                      -> "none" : no flow control
-     *                      -> "rts/cts" : use RTS/CTS handshaking
-     *                      -> "xon/xoff" : use XON/XOFF protocol
-     * @return bool
+     * @param  string $mode
+     * Set the flow control mode. Available modes :
+     *  -> "none" : no flow control
+     *  -> "rts/cts" : use RTS/CTS handshaking
+     *  -> "xon/xoff" : use XON/XOFF protocol
      */
-    public function setFlowControl($mode): ?bool
+    public function setFlowControl(string $mode): void
     {
         $this->deviceStatus('flow control', $mode);
 
@@ -398,31 +398,20 @@ final class SerialConnection
             trigger_error("Invalid flow control mode specified", E_USER_ERROR);
         }
 
-        if ($this->_os === "linux") {
-            $ret = $this->_exec(
-                "stty -F " . $this->_device . " " . $linuxModes[$mode],
-                $out
-            );
-        } elseif ($this->_os === "osx") {
-            $ret = $this->_exec(
-                "stty -f " . $this->_device . " " . $linuxModes[$mode],
-                $out
-            );
+        if ($this->operatingSystem->_os !== 'windows') {
+            $result = $this->write($linuxModes[$mode]);
         } else {
-            $ret = $this->_exec(
+            $result = $this->_exec(
                 "mode " . $this->_winDevice . " " . $windowsModes[$mode],
                 $out
             );
         }
 
-        if ($ret === 0) {
-            return true;
+        if ($result !== 0) {
+            throw new RuntimeException(
+                'Unable to set flow control.'
+            );
         }
-
-        trigger_error(
-            "Unable to set flow control : " . $out[1],
-            E_USER_ERROR
-        );
     }
 
     /**
