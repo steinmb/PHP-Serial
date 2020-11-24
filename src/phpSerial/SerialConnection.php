@@ -213,19 +213,13 @@ final class SerialConnection
         }
 
         $ret = 0;
-        if ($this->_os === "linux") {
+        if ($this->operatingSystem->_os === 'linux') {
+            $ret = $this->writeBaudRate($rate);
+        } elseif ($this->operatingSystem->_os === 'osx') {
+            $ret = $this->writeBaudRate($rate);
+        } elseif ($this->operatingSystem->_os === 'windows') {
             $ret = $this->_exec(
-                "stty -F " . $this->_device . " " . $rate,
-                $out
-            );
-        } elseif ($this->_os === "osx") {
-            $ret = $this->_exec(
-                "stty -f " . $this->_device . " " . $rate,
-                $out
-            );
-        } elseif ($this->_os === "windows") {
-            $ret = $this->_exec(
-                "mode " . $this->_winDevice . " BAUD=" . self::VALID_BAUDS[$rate],
+                "mode " . $this->_winDevice . ' BAUD=' . self::VALID_BAUDS[$rate],
                 $out
             );
         }
@@ -235,6 +229,15 @@ final class SerialConnection
                 'Unable to set baud rate: ' . $rate
             );
         }
+
+        return true;
+    }
+
+    private function writeBaudRate(int $baudRate)
+    {
+        return $this->_exec(
+            "stty -F " . $this->_device . " " . $baudRate,
+            $out);
     }
 
     /**
