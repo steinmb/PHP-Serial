@@ -34,6 +34,16 @@ final class SerialConnection
         'even' => 'parenb -parodd',
     ];
     private const VALID_STOP_BIT = [1, 1.5, 2];
+    private const VALID_FLOW_CONTROL = [
+        'none'     => 'clocal -crtscts -ixon -ixoff',
+        'rts/cts'  => '-clocal crtscts -ixon -ixoff',
+        'xon/xoff' => '-clocal -crtscts ixon ixoff'
+    ];
+    private const VALID_FLOW_CONTROL_WINDOWS = [
+        'none'     => 'xon=off octs=off rts=on',
+        'rts/cts'  => 'xon=off octs=on rts=hs',
+        'xon/xoff' => 'xon=on octs=off rts=on',
+    ];
     public $_device;
     public $baudRate;
     public $parity;
@@ -96,6 +106,13 @@ final class SerialConnection
 
         }
         $this->stopBits = $stopBits;
+
+        if ($flowControl !== 'none' && $flowControl !== 'rts/cts' && $flowControl !== 'xon/xoff') {
+            throw new InvalidArgumentException(
+                'Invalid flow control mode specified: ' . $flowControl
+            );
+        }
+
         $this->flowControl = $flowControl;
     }
 
@@ -382,27 +399,27 @@ final class SerialConnection
     public function setFlowControl(string $mode): void
     {
         $this->deviceStatus('flow control', $mode);
+//
+//        $linuxModes = array(
+//            "none"     => "clocal -crtscts -ixon -ixoff",
+//            "rts/cts"  => "-clocal crtscts -ixon -ixoff",
+//            "xon/xoff" => "-clocal -crtscts ixon ixoff"
+//        );
+//        $windowsModes = array(
+//            "none"     => "xon=off octs=off rts=on",
+//            "rts/cts"  => "xon=off octs=on rts=hs",
+//            "xon/xoff" => "xon=on octs=off rts=on",
+//        );
 
-        $linuxModes = array(
-            "none"     => "clocal -crtscts -ixon -ixoff",
-            "rts/cts"  => "-clocal crtscts -ixon -ixoff",
-            "xon/xoff" => "-clocal -crtscts ixon ixoff"
-        );
-        $windowsModes = array(
-            "none"     => "xon=off octs=off rts=on",
-            "rts/cts"  => "xon=off octs=on rts=hs",
-            "xon/xoff" => "xon=on octs=off rts=on",
-        );
-
-        if ($mode !== "none" and $mode !== "rts/cts" and $mode !== "xon/xoff") {
-            trigger_error("Invalid flow control mode specified", E_USER_ERROR);
-        }
+//        if ($mode !== "none" and $mode !== "rts/cts" and $mode !== "xon/xoff") {
+//            trigger_error("Invalid flow control mode specified", E_USER_ERROR);
+//        }
 
         if ($this->operatingSystem->_os !== 'windows') {
-            $result = $this->write($linuxModes[$mode]);
+            $result = $this->write(self::VALID_FLOW_CONTROL[$mode]);
         } else {
             $result = $this->_exec(
-                "mode " . $this->_winDevice . " " . $windowsModes[$mode],
+                "mode " . $this->_winDevice . " " . self::VALID_FLOW_CONTROL_WINDOWS[$mode],
                 $out
             );
         }
