@@ -206,9 +206,9 @@ final class SerialConnection
     public function setBaudRate(int $rate): void
     {
         $this->deviceStatus('baud rate', $rate);
-        $result = 0;
+
         if (!$this->operatingSystem->_os !== 'windows') {
-            $result = $this->writeBaudRate($rate);
+            $result = $this->write($rate);
         } else {
             $result = $this->_exec(
                 "mode " . $this->_winDevice . ' BAUD=' . self::VALID_BAUDS[$rate],
@@ -223,7 +223,7 @@ final class SerialConnection
         }
     }
 
-    private function deviceStatus($message, $value)
+    private function deviceStatus($message, $value): void
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             throw new RuntimeException(
@@ -233,10 +233,10 @@ final class SerialConnection
         }
     }
 
-    private function writeBaudRate(int $baudRate): int
+    private function write($value): int
     {
         return $this->_exec(
-            "stty -F " . $this->_device . " " . $baudRate,
+            "stty -F " . $this->_device . " " . $value,
             $out);
     }
 
@@ -244,11 +244,9 @@ final class SerialConnection
      * Set parity.
      * Valid modes: odd, even, none.
      *
-     * @param  string $parity one of the modes
-     *
-     * @return bool
+     * @param  string $parity
      */
-    public function setParity(string $parity): bool
+    public function setParity(string $parity)
     {
         $this->deviceStatus('parity', $parity);
         $args = [
@@ -259,33 +257,22 @@ final class SerialConnection
 
         if (!isset($args[$parity])) {
             trigger_error("Parity mode not supported", E_USER_WARNING);
-            return false;
         }
 
-        if ($this->_os === "linux") {
-            $ret = $this->_exec(
-                "stty -F " . $this->_device . " " . $args[$parity],
-                $out
-            );
-        } elseif ($this->_os === "osx") {
-            $ret = $this->_exec(
-                "stty -f " . $this->_device . " " . $args[$parity],
-                $out
-            );
+        if ($this->operatingSystem->_os !== 'windows') {
+            $result = $this->write($args[$parity]);
         } else {
-            $ret = $this->_exec(
+            $result = $this->_exec(
                 "mode " . $this->_winDevice . " PARITY=" . $parity[0],
                 $out
             );
         }
 
-        if ($ret === 0) {
-            return true;
+        if ($result !== 0) {
+            throw new RuntimeException(
+                'Unable to set parity to: ' . $parity
+            );
         }
-
-        trigger_error("Unable to set parity : " . $out[1], E_USER_WARNING);
-
-        return false;
     }
 
     /**
