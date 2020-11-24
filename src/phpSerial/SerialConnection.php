@@ -212,36 +212,29 @@ final class SerialConnection
             );
         }
 
-        if (isset(self::VALID_BAUDS[$rate])) {
-            if ($this->_os === "linux") {
-                $ret = $this->_exec(
-                    "stty -F " . $this->_device . " " . $rate,
-                    $out
-                );
-            } elseif ($this->_os === "osx") {
-                $ret = $this->_exec(
-                    "stty -f " . $this->_device . " " . $rate,
-                    $out
-                );
-            } elseif ($this->_os === "windows") {
-                $ret = $this->_exec(
-                    "mode " . $this->_winDevice . " BAUD=" . self::VALID_BAUDS[$rate],
-                    $out
-                );
-            } else {
-                return false;
-            }
-
-            if ($ret !== 0) {
-                throw new RuntimeException(
-                    'Unable to set baud rate: ' . $rate
-                );
-            }
-
-            return true;
+        $ret = 0;
+        if ($this->_os === "linux") {
+            $ret = $this->_exec(
+                "stty -F " . $this->_device . " " . $rate,
+                $out
+            );
+        } elseif ($this->_os === "osx") {
+            $ret = $this->_exec(
+                "stty -f " . $this->_device . " " . $rate,
+                $out
+            );
+        } elseif ($this->_os === "windows") {
+            $ret = $this->_exec(
+                "mode " . $this->_winDevice . " BAUD=" . self::VALID_BAUDS[$rate],
+                $out
+            );
         }
 
-        return false;
+        if ($ret !== 0) {
+            throw new RuntimeException(
+                'Unable to set baud rate: ' . $rate
+            );
+        }
     }
 
     /**
