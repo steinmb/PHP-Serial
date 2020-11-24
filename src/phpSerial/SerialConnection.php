@@ -2,6 +2,7 @@
 
 namespace steinmb\phpSerial;
 
+use InvalidArgumentException;
 use RuntimeException;
 
 define ("SERIAL_DEVICE_NOTSET", 0);
@@ -74,7 +75,7 @@ final class SerialConnection
         $this->baudRate = $baudRate;
 
         if (!isset(self::VALID_PARITY[$parity])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Unknown parity mode: ' . $parity
             );
         }
@@ -262,7 +263,7 @@ final class SerialConnection
         $this->deviceStatus('parity', $parity);
 
         if ($this->operatingSystem->_os !== 'windows') {
-            $result = $this->write($args[$parity]);
+            $result = $this->write(self::VALID_PARITY[$parity]);
         } else {
             $result = $this->_exec(
                 "mode " . $this->_winDevice . " PARITY=" . $parity[0],
