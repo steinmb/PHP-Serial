@@ -169,7 +169,7 @@ final class SerialConnection
             }
 
             throw new RuntimeException(
-                'Specified serial port is not valid.'
+                'Specified serial port: ' . $device . ' not found.'
             );
         }
 
