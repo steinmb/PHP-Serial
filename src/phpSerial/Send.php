@@ -15,13 +15,13 @@ final class Send implements SendInterface
     }
 
     /**
-     * Sends a string to the device
+     * Sends a string to the device.
      *
      * @param $message
      * @param float $waitForReply
-     *   time to wait for the reply (in seconds).
+     *   Time to wait for the reply (in seconds).
      */
-    public function send($message, $waitForReply = 0.1): void
+    public function send(string $message, float $waitForReply = 0.1): void
     {
         $this->setupDevice();
         $this->serialConnection->_buffer .= $message;
@@ -37,6 +37,6 @@ final class Send implements SendInterface
     {
         $this->serialConnection->setDevice($this->serialConnection->_device);
         $this->serialConnection->setBaudRate($this->serialConnection->baudRate);
-        $this->serialConnection->setParity($this->serialConnection->pa);
+        $this->serialConnection->setParity($this->serialConnection->parity);
     }
 }

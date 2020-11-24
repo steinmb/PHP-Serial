@@ -44,7 +44,7 @@ final class SerialConnection
         'rts/cts'  => 'xon=off octs=on rts=hs',
         'xon/xoff' => 'xon=on octs=off rts=on',
     ];
-    public $_device;
+    public $_device = '';
     public $baudRate;
     public $parity;
     public $characterLength;
