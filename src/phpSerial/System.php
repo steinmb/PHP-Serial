@@ -6,8 +6,7 @@ use RuntimeException;
 
 final class System
 {
-    public $operatingSystem;
-    public $_os;
+    private $operatingSystem;
 
     public function __construct()
     {
@@ -16,12 +15,11 @@ final class System
 
         if (strpos($sysName, 'Linux') === 0) {
             $this->operatingSystem = 'linux';
-            $this->_os = 'linux';
         } elseif (strpos($sysName, 'Darwin') === 0) {
-            $this->_os = 'osx';
+            $this->operatingSystem = 'osx';
             return;
         } elseif (strpos($sysName, 'Windows') === 0) {
-            $this->_os = 'windows';
+            $this->operatingSystem = 'windows';
             return;
         }
 
@@ -29,4 +27,10 @@ final class System
             'Unknown operation system.'
         );
     }
+
+    public function operatingSystem(): string
+    {
+        return $this->operatingSystem;
+    }
+
 }

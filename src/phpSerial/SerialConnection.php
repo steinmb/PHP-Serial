@@ -54,7 +54,7 @@ final class SerialConnection
     public $_dHandle;
     public $_dState = SERIAL_DEVICE_NOTSET;
     public $_buffer = "";
-    private $operatingSystem;
+    private $machine;
 
     /**
      * This var says if buffer should be flushed by sendMessage (true) or
@@ -65,7 +65,7 @@ final class SerialConnection
     public $autoFlush = true;
 
     public function __construct(
-        System $operatingSystem,
+        System $machine,
         string $device,
         int $baudRate,
         string $parity,
@@ -74,7 +74,7 @@ final class SerialConnection
         string $flowControl
     )
     {
-        $this->operatingSystem = $operatingSystem;
+        $this->machine = $machine;
         $this->_device = $device;
 
         if (!isset(self::VALID_BAUDS[$baudRate])) {
@@ -98,7 +98,7 @@ final class SerialConnection
             );
         }
 
-        if ($stopBits === 1.5 && $this->operatingSystem->_os === 'linux') {
+        if ($stopBits === 1.5 && $this->machine->operatingSystem() === 'linux') {
             throw new InvalidArgumentException(
                 'Linux do not support: ' . $stopBits . ' setting.'
             );
@@ -136,7 +136,7 @@ final class SerialConnection
     public function setDevice(string $device): void
     {
         if ($this->_dState !== SERIAL_DEVICE_OPENED) {
-            if ($this->operatingSystem->_os === "linux") {
+            if ($this->machine->operatingSystem() === 'linux') {
                 if (exec("stty") !== 0) {
                     throw new RuntimeException(
                         'No stty available, unable setup device: ' , $device
@@ -151,12 +151,12 @@ final class SerialConnection
                     $this->_device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
                 }
-            } elseif ($this->operatingSystem->_os === "osx") {
+            } elseif ($this->machine->operatingSystem() === "osx") {
                 if ($this->_exec("stty -f " . $device) === 0) {
                     $this->_device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
                 }
-            } elseif ($this->operatingSystem->_os === "windows") {
+            } elseif ($this->machine->operatingSystem() === "windows") {
                 if (preg_match("@^COM(\\d+):?$@i", $device, $matches)
                         and $this->_exec(
                             exec("mode " . $device . " xon=on BAUD=9600")
@@ -256,7 +256,7 @@ final class SerialConnection
     {
         $this->deviceStatus('baud rate', $rate);
 
-        if (!$this->operatingSystem->_os !== 'windows') {
+        if (!$this->machine->operatingSystem() !== 'windows') {
             $result = $this->write($rate);
         } else {
             $result = $this->_exec(
@@ -285,7 +285,7 @@ final class SerialConnection
     private function write($value): int
     {
         $command = 'stty -F';
-        if ($this->operatingSystem->_os === 'osx') {
+        if ($this->machine->operatingSystem() === 'osx') {
             $command = 'stty -f';
         }
 
@@ -304,7 +304,7 @@ final class SerialConnection
     {
         $this->deviceStatus('parity', $parity);
 
-        if ($this->operatingSystem->_os !== 'windows') {
+        if ($this->machine->operatingSystem() !== 'windows') {
             $result = $this->write(self::VALID_PARITY[$parity]);
         } else {
             $result = $this->_exec(
@@ -336,19 +336,18 @@ final class SerialConnection
             return false;
         }
 
-        $int = (int) $int;
         if ($int < 5) {
             $int = 5;
         } elseif ($int > 8) {
             $int = 8;
         }
 
-        if ($this->operatingSystem->_os === "linux") {
+        if ($this->machine->operatingSystem() === "linux") {
             $ret = $this->_exec(
                 "stty -F " . $this->_device . " cs" . $int,
                 $out
             );
-        } elseif ($this->operatingSystem->_os === "osx") {
+        } elseif ($this->machine->operatingSystem() === "osx") {
             $ret = $this->_exec(
                 "stty -f " . $this->_device . " cs" . $int,
                 $out
@@ -382,7 +381,7 @@ final class SerialConnection
     public function setStopBits(float $length): void
     {
         $this->deviceStatus('stop bits', $length);
-        if ($this->operatingSystem->_os !== 'windows') {
+        if ($this->machine->operatingSystem() !== 'windows') {
             $result = $this->write(' ' . (($length === 1) ? "-" : "") . 'cstopb');
         } else {
             $result = $this->_exec(
@@ -411,7 +410,7 @@ final class SerialConnection
     {
         $this->deviceStatus('flow control', $mode);
 
-        if ($this->operatingSystem->_os !== 'windows') {
+        if ($this->machine->operatingSystem() !== 'windows') {
             $result = $this->write(self::VALID_FLOW_CONTROL[$mode]);
         } else {
             $result = $this->_exec(
@@ -440,7 +439,7 @@ final class SerialConnection
      *
      * @return bool
      */
-    public function setSetSerialFlag(string $param, string $arg = '')
+    public function setSetSerialFlag(string $param, string $arg = ''): bool
     {
         if (!$this->_ckOpened()) {
             return false;
