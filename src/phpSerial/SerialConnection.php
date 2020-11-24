@@ -107,6 +107,7 @@ final class SerialConnection
         }
         $this->stopBits = $stopBits;
 
+
         if ($flowControl !== 'none' && $flowControl !== 'rts/cts' && $flowControl !== 'xon/xoff') {
             throw new InvalidArgumentException(
                 'Invalid flow control mode specified: ' . $flowControl
@@ -439,9 +440,10 @@ final class SerialConnection
      *
      * @param  string $param parameter name
      * @param  string $arg   parameter value
+     *
      * @return bool
      */
-    public function setSetSerialFlag($param, $arg = "")
+    public function setSetSerialFlag(string $param, string $arg = '')
     {
         if (!$this->_ckOpened()) {
             return false;
@@ -467,27 +469,17 @@ final class SerialConnection
     }
 
     /**
-     * Flushes the output buffer
-     * Renamed from flush for osx compat. issues
-     *
-     * @return bool
+     * Flushes the output buffer.
      */
-    public function flush()
+    public function flush(): void
     {
         if (!$this->_ckOpened()) {
-            return false;
+            return;
         }
 
         if (fwrite($this->_dHandle, $this->_buffer) !== false) {
-            $this->_buffer = "";
-
-            return true;
+            $this->_buffer = '';
         }
-
-        $this->_buffer = "";
-        trigger_error("Error while sending message", E_USER_WARNING);
-
-        return false;
     }
 
     public function _ckOpened()
