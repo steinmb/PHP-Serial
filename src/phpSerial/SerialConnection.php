@@ -53,7 +53,7 @@ final class SerialConnection implements GatewayInterface
     private $_winDevice;
     private $_dHandle;
     private $_dState = SERIAL_DEVICE_NOTSET;
-    private $_buffer = "";
+    private $_buffer = '';
     private $machine;
 
     /**
@@ -540,4 +540,8 @@ final class SerialConnection implements GatewayInterface
         return $retVal;
     }
 
+    public function sendMessage(string $message): void
+    {
+        $this->_buffer = $message;
+    }
 }
