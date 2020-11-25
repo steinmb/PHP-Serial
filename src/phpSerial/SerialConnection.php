@@ -45,7 +45,7 @@ final class SerialConnection implements GatewayInterface
     private $deviceStatus = SERIAL_DEVICE_NOTSET;
     private $windowsDevice;
     private $deviceHandle;
-    private $_buffer = '';
+    private $buffer = '';
     private $machine;
     private $execute;
     private $portSettings;
@@ -431,8 +431,8 @@ final class SerialConnection implements GatewayInterface
             return;
         }
 
-        if (fwrite($this->deviceHandle, $this->_buffer) !== false) {
-            $this->_buffer = '';
+        if (fwrite($this->deviceHandle, $this->buffer) !== false) {
+            $this->buffer = '';
         }
     }
 
@@ -459,6 +459,6 @@ final class SerialConnection implements GatewayInterface
 
     public function sendMessage(string $message): void
     {
-        $this->_buffer = $message;
+        $this->buffer = $message;
     }
 }
