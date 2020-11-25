@@ -99,28 +99,15 @@ final class SerialConnection implements GatewayInterface
      *
      * @param  string $device the name of the device to be used
      */
-    private function setDevice(string $device): void
+    private function setDevice(): void
     {
+        $device = $this->portSettings->device;
+
         if ($this->deviceStatus !== SERIAL_DEVICE_OPENED) {
             if ($this->machine->operatingSystem() === 'linux') {
-                if (exec("stty") !== 0) {
-                    throw new RuntimeException(
-                        'No stty available, unable setup device: ' , $device
-                    );
-                }
-
-                if (preg_match("@^COM(\\d+):?$@i", $device, $matches)) {
-                    $device = "/dev/ttyS" . ($matches[1] - 1);
-                }
-
-                if ($this->execute->execute("stty -F " . $device) === 0) {
-                    $this->portSettings->device;
-                    $this->portSettings->device = $device;
-                    $this->deviceStatus = SERIAL_DEVICE_SET;
-                }
+                $this->setLinuxDevice($device);
             } elseif ($this->machine->operatingSystem() === 'osx') {
                 if ($this->execute->execute("stty -f " . $device) === 0) {
-                    $this->portSettings->device = $device;
                     $this->deviceStatus = SERIAL_DEVICE_SET;
                 }
             } elseif ($this->machine->operatingSystem() === "windows") {
@@ -143,6 +130,23 @@ final class SerialConnection implements GatewayInterface
         throw new RuntimeException(
             'You must close your device before to set an other.'
         );
+    }
+
+    private function setLinuxDevice(string $device): void
+    {
+        if (exec("stty") !== 0) {
+            throw new RuntimeException(
+                'No stty available, unable setup device: ' , $device
+            );
+        }
+
+        if ($this->execute->execute("stty -F " . $device) !== 0) {
+            throw new RuntimeException(
+                'Specified serial port: ' . $device . ' not found.'
+            );
+        }
+
+        $this->deviceStatus = SERIAL_DEVICE_SET;
     }
 
     /**
