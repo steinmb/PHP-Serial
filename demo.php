@@ -2,6 +2,7 @@
 
 include_once __DIR__ . '/vendor/autoload.php';
 
+use steinmb\phpSerial\Receive;
 use steinmb\phpSerial\Send;
 use steinmb\phpSerial\SerialConnection;
 use steinmb\phpSerial\System;
@@ -18,4 +19,7 @@ $port1 = new SerialConnection(
 );
 
 $senderService = new Send($port1);
-$senderService->send('Foo bar');
+$receiveService = new Receive($port1);
+
+//$senderService->send('Foo bar');
+$receiveService->read();
