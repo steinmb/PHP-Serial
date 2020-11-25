@@ -44,7 +44,7 @@ final class SerialConnection implements GatewayInterface
     ];
     private $deviceStatus = SERIAL_DEVICE_NOTSET;
     private $windowsDevice;
-    private $_dHandle;
+    private $deviceHandle;
     private $_buffer = '';
     private $machine;
     private $execute;
@@ -76,7 +76,7 @@ final class SerialConnection implements GatewayInterface
 
     public function getDeviceHandle()
     {
-        return $this->_dHandle;
+        return $this->deviceHandle;
     }
 
     public function changeDevice(string $device): SerialConnection
@@ -185,16 +185,16 @@ final class SerialConnection implements GatewayInterface
             return false;
         }
 
-        $this->_dHandle = @fopen($this->portSettings->device, $mode);
+        $this->deviceHandle = @fopen($this->portSettings->device, $mode);
 
-        if ($this->_dHandle !== false) {
-            stream_set_blocking($this->_dHandle, 0);
+        if ($this->deviceHandle !== false) {
+            stream_set_blocking($this->deviceHandle, 0);
             $this->deviceStatus = SERIAL_DEVICE_OPENED;
 
             return true;
         }
 
-        $this->_dHandle = null;
+        $this->deviceHandle = null;
         trigger_error("Unable to open the device", E_USER_WARNING);
 
         return false;
@@ -211,8 +211,8 @@ final class SerialConnection implements GatewayInterface
             return true;
         }
 
-        if (fclose($this->_dHandle)) {
-            $this->_dHandle = null;
+        if (fclose($this->deviceHandle)) {
+            $this->deviceHandle = null;
             $this->deviceStatus = SERIAL_DEVICE_SET;
 
             return true;
@@ -431,7 +431,7 @@ final class SerialConnection implements GatewayInterface
             return;
         }
 
-        if (fwrite($this->_dHandle, $this->_buffer) !== false) {
+        if (fwrite($this->deviceHandle, $this->_buffer) !== false) {
             $this->_buffer = '';
         }
     }
