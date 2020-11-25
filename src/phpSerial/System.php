@@ -4,7 +4,7 @@ namespace steinmb\phpSerial;
 
 use RuntimeException;
 
-final class System
+final class System implements SystemInterface
 {
     private $operatingSystem;
 
