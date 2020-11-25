@@ -16,6 +16,7 @@ final class SendTest extends TestCase
 
     public function setup(): void
     {
+        parent::setUp();
         $this->portSettings = new CreatePort(
             new SystemFixed('linux'),
             'ttyS0',
@@ -84,5 +85,34 @@ final class SendTest extends TestCase
             ),
             'Failed detecting a illegal parity setting under Linux.'
         );
+        self::assertClassHasAttribute(
+            'baudRate', CreatePort::class,
+            'Unable to find baud rate.'
+        );
+    }
+
+    public function testStopBits()
+    {
+        self::assertSame(
+            '1',
+            $this->portSettings->stopBits,
+            'Stop bits value incorrect.'
+        );
+
+        $decimal = new CreatePort(
+            new SystemFixed('osx'),
+            'ttyS0',
+            38400,
+            'none',
+            8,
+            1.5,
+            'none'
+        );
+        self::assertSame(
+            '1.5',
+            $decimal->stopBits,
+            'Stop bits value incorrect.'
+        );
+
     }
 }

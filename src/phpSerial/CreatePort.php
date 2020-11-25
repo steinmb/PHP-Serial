@@ -73,8 +73,7 @@ final class CreatePort
             );
 
         }
-        $this->stopBits = $stopBits;
-
+        $this->stopBits = (string) $stopBits;
 
         if ($flowControl !== 'none' && $flowControl !== 'rts/cts' && $flowControl !== 'xon/xoff') {
             throw new InvalidArgumentException(
