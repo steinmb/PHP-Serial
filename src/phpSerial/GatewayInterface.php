@@ -8,6 +8,7 @@ interface GatewayInterface
 {
     public function __construct(
         SystemInterface $machine,
+        ExecuteInterface $execute,
         string $device,
         int $baudRate,
         string $parity,

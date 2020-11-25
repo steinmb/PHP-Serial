@@ -55,6 +55,7 @@ final class SerialConnection implements GatewayInterface
     private $_dState = SERIAL_DEVICE_NOTSET;
     private $_buffer = '';
     private $machine;
+    private $execute;
 
     /**
      * This var says if buffer should be flushed by sendMessage (true) or
@@ -66,6 +67,7 @@ final class SerialConnection implements GatewayInterface
 
     public function __construct(
         SystemInterface $machine,
+        ExecuteInterface $execute,
         string $device,
         int $baudRate,
         string $parity,
@@ -75,6 +77,7 @@ final class SerialConnection implements GatewayInterface
     )
     {
         $this->machine = $machine;
+        $this->execute = $execute;
         $this->_device = $device;
 
         if (!isset(self::VALID_BAUDS[$baudRate])) {
@@ -168,18 +171,18 @@ final class SerialConnection implements GatewayInterface
                     $device = "/dev/ttyS" . ($matches[1] - 1);
                 }
 
-                if ($this->_exec("stty -F " . $device) === 0) {
+                if ($this->execute->execute("stty -F " . $device) === 0) {
                     $this->_device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
                 }
             } elseif ($this->machine->operatingSystem() === 'osx') {
-                if ($this->_exec("stty -f " . $device) === 0) {
+                if ($this->execute->execute("stty -f " . $device) === 0) {
                     $this->_device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
                 }
             } elseif ($this->machine->operatingSystem() === "windows") {
                 if (preg_match("@^COM(\\d+):?$@i", $device, $matches)
-                        and $this->_exec(
+                        and $this->execute->execute(
                             exec("mode " . $device . " xon=on BAUD=9600")
                         ) === 0
                 ) {
@@ -280,7 +283,7 @@ final class SerialConnection implements GatewayInterface
         if (!$this->machine->operatingSystem() !== 'windows') {
             $result = $this->write($rate);
         } else {
-            $result = $this->_exec(
+            $result = $this->execute->execute(
                 "mode " . $this->_winDevice . ' BAUD=' . self::VALID_BAUDS[$rate],
                 $out
             );
@@ -310,7 +313,7 @@ final class SerialConnection implements GatewayInterface
             $command = 'stty -f';
         }
 
-        return $this->_exec(
+        return $this->execute->execute(
             $command . ' ' . $this->_device . ' ' . $value,
             $out);
     }
@@ -328,7 +331,7 @@ final class SerialConnection implements GatewayInterface
         if ($this->machine->operatingSystem() !== 'windows') {
             $result = $this->write(self::VALID_PARITY[$parity]);
         } else {
-            $result = $this->_exec(
+            $result = $this->execute->execute(
                 "mode " . $this->_winDevice . " PARITY=" . $parity[0],
                 $out
             );
@@ -364,17 +367,17 @@ final class SerialConnection implements GatewayInterface
         }
 
         if ($this->machine->operatingSystem() === "linux") {
-            $ret = $this->_exec(
+            $ret = $this->execute->execute(
                 "stty -F " . $this->_device . " cs" . $int,
                 $out
             );
         } elseif ($this->machine->operatingSystem() === "osx") {
-            $ret = $this->_exec(
+            $ret = $this->execute->execute(
                 "stty -f " . $this->_device . " cs" . $int,
                 $out
             );
         } else {
-            $ret = $this->_exec(
+            $ret = $this->execute->execute(
                 "mode " . $this->_winDevice . " DATA=" . $int,
                 $out
             );
@@ -405,7 +408,7 @@ final class SerialConnection implements GatewayInterface
         if ($this->machine->operatingSystem() !== 'windows') {
             $result = $this->write(' ' . (($length === 1) ? "-" : "") . 'cstopb');
         } else {
-            $result = $this->_exec(
+            $result = $this->execute->execute(
                 "mode " . $this->_winDevice . " STOP=" . $length,
                 $out
             );
@@ -434,7 +437,7 @@ final class SerialConnection implements GatewayInterface
         if ($this->machine->operatingSystem() !== 'windows') {
             $result = $this->write(self::VALID_FLOW_CONTROL[$mode]);
         } else {
-            $result = $this->_exec(
+            $result = $this->execute->execute(
                 "mode " . $this->_winDevice . " " . self::VALID_FLOW_CONTROL_WINDOWS[$mode],
                 $out
             );
@@ -518,26 +521,6 @@ final class SerialConnection implements GatewayInterface
         }
 
         return true;
-    }
-
-    private function _exec($cmd, &$out = null): int
-    {
-        $desc = [
-            1 => ['pipe', 'w'],
-            2 => ['pipe', 'w'],
-        ];
-        $proc = proc_open($cmd, $desc, $pipes);
-        $ret = stream_get_contents($pipes[1]);
-        $err = stream_get_contents($pipes[2]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-        $retVal = proc_close($proc);
-
-        if (func_num_args() === 2) {
-            $out = array($ret, $err);
-        }
-
-        return $retVal;
     }
 
     public function sendMessage(string $message): void
