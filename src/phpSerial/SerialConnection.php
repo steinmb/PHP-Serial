@@ -447,16 +447,6 @@ final class SerialConnection implements GatewayInterface
         return true;
     }
 
-    private function _ckClosed(): bool
-    {
-        if ($this->deviceStatus === SERIAL_DEVICE_OPENED) {
-            trigger_error('Device must be closed', E_USER_WARNING);
-            return false;
-        }
-
-        return true;
-    }
-
     public function sendMessage(string $message): void
     {
         $this->buffer = $message;
