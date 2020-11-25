@@ -6,36 +6,25 @@ use RuntimeException;
 
 final class System implements SystemInterface
 {
-    private $operatingSystem;
-
-    public function __construct()
+    public function operatingSystem(): string
     {
         setlocale(LC_ALL, 'en_US');
         $sysName = php_uname();
 
         if (strpos($sysName, 'Linux') === 0) {
-            $this->operatingSystem = 'linux';
-            return;
+            return 'linux';
         }
 
         if (strpos($sysName, 'Darwin') === 0) {
-            $this->operatingSystem = 'osx';
-            return;
+            return 'osx';
         }
 
         if (strpos($sysName, 'Windows') === 0) {
-            $this->operatingSystem = 'windows';
-            return;
+            return 'windows';
         }
 
         throw new RuntimeException(
             'Unknown operation system.'
         );
     }
-
-    public function operatingSystem(): string
-    {
-        return $this->operatingSystem;
-    }
-
 }
