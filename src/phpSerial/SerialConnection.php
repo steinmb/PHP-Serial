@@ -81,7 +81,7 @@ final class SerialConnection implements GatewayInterface
 
     public function connect(string $mode)
     {
-        $this->setDevice($this->portSettings->device);
+        $this->setDevice();
         $this->setBaudRate();
         $this->setParity();
         $this->setCharacterLength();
