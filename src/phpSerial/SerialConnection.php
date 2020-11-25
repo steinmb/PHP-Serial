@@ -79,14 +79,6 @@ final class SerialConnection implements GatewayInterface
         return $this->deviceHandle;
     }
 
-    public function changeDevice(string $device): SerialConnection
-    {
-        $new_object = clone $this;
-        $new_object->setDevice($device);
-
-        return $new_object;
-    }
-
     public function connect(string $mode)
     {
         $this->setDevice($this->portSettings->device);

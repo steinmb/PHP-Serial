@@ -13,7 +13,6 @@ interface GatewayInterface
     );
     public function getDeviceStatus(): int;
     public function getDeviceHandle();
-    public function changeDevice(string $deviceName);
     public function connect(string $mode);
     public function flush(): void;
     public function sendMessage(string $message): void;
