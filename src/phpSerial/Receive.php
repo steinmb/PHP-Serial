@@ -22,7 +22,7 @@ final class Receive implements ReceiveInterface
      *
      * @return string
      */
-    public function readPort(int $count = 0): string
+    public function read(int $count = 0): string
     {
         $this->setupDevice();
         if ($this->serialConnection->getDeviceStatus() !== SERIAL_DEVICE_OPENED) {
@@ -31,10 +31,10 @@ final class Receive implements ReceiveInterface
             );
         }
 
-        return $this->read($count);
+        return $this->readPort($count);
     }
 
-    private function read(int $count): string
+    private function readPort(int $count): string
     {
         $content = '';
         $i = 0;
