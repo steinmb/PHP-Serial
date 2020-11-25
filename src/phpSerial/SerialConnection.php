@@ -79,7 +79,7 @@ final class SerialConnection implements GatewayInterface
         return $this->deviceHandle;
     }
 
-    public function connect(string $mode)
+    public function connect(string $mode): void
     {
         $this->setDevice();
         $this->setBaudRate();
@@ -112,10 +112,10 @@ final class SerialConnection implements GatewayInterface
         }
 
         throw new RuntimeException(
-          'Unable to set port, already open.'
+          'Unable to setup ' . $device . '. Port already open.'
         );
     }
-    private function setWindowDevice(string $device)
+    private function setWindowDevice(string $device): void
     {
         if (preg_match("@^COM(\\d+):?$@i", $device, $matches)
             && $this->execute->execute(
@@ -126,7 +126,7 @@ final class SerialConnection implements GatewayInterface
             $this->deviceStatus = SERIAL_DEVICE_SET;
         }
     }
-    private function setmacOSDevice(string $device)
+    private function setmacOSDevice(string $device): void
     {
         if ($this->execute->execute('stty -f ' . $device) !== 0) {
             throw new RuntimeException(
