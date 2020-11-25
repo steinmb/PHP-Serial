@@ -2,7 +2,6 @@
 
 namespace steinmb\phpSerial;
 
-use InvalidArgumentException;
 use RuntimeException;
 
 define ("SERIAL_DEVICE_NOTSET", 0);
@@ -33,7 +32,6 @@ final class SerialConnection implements GatewayInterface
         'odd'  => 'parenb parodd',
         'even' => 'parenb -parodd',
     ];
-    private const VALID_STOP_BIT = [1.0, 1.5, 2.0,];
     private const VALID_FLOW_CONTROL = [
         'none'     => 'clocal -crtscts -ixon -ixoff',
         'rts/cts'  => '-clocal crtscts -ixon -ixoff',
@@ -44,18 +42,13 @@ final class SerialConnection implements GatewayInterface
         'rts/cts'  => 'xon=off octs=on rts=hs',
         'xon/xoff' => 'xon=on octs=off rts=on',
     ];
-    private $_device = '';
-    private $baudRate;
-    private $parity;
-    private $characterLength;
-    private $stopBits;
-    private $flowControl;
     private $_winDevice;
     private $_dHandle;
     private $_dState = SERIAL_DEVICE_NOTSET;
     private $_buffer = '';
     private $machine;
     private $execute;
+    private $portSettings;
 
     /**
      * This var says if buffer should be flushed by sendMessage (true) or
@@ -68,55 +61,12 @@ final class SerialConnection implements GatewayInterface
     public function __construct(
         SystemInterface $machine,
         ExecuteInterface $execute,
-        string $device,
-        int $baudRate,
-        string $parity,
-        int $characterLength,
-        float $stopBits,
-        string $flowControl
+        CreatePort $portSettings
     )
     {
         $this->machine = $machine;
         $this->execute = $execute;
-        $this->_device = $device;
-
-        if (!isset(self::VALID_BAUDS[$baudRate])) {
-            throw InvalidSerialException::invalidBaudRate(
-                self::VALID_BAUDS, $baudRate
-            );
-        }
-        $this->baudRate = $baudRate;
-
-        if (!isset(self::VALID_PARITY[$parity])) {
-            throw new InvalidArgumentException(
-                'Unknown parity mode: ' . $parity
-            );
-        }
-        $this->parity = $parity;
-        $this->characterLength = $characterLength;
-
-        if (!in_array($stopBits, self::VALID_STOP_BIT, true)) {
-            throw new InvalidArgumentException(
-                'Invalid stop bit value: ' . $stopBits
-            );
-        }
-
-        if ($stopBits === 1.5 && $this->machine->operatingSystem() === 'linux') {
-            throw new InvalidArgumentException(
-                'Linux do not support: ' . $stopBits . ' setting.'
-            );
-
-        }
-        $this->stopBits = $stopBits;
-
-
-        if ($flowControl !== 'none' && $flowControl !== 'rts/cts' && $flowControl !== 'xon/xoff') {
-            throw new InvalidArgumentException(
-                'Invalid flow control mode specified: ' . $flowControl
-            );
-        }
-
-        $this->flowControl = $flowControl;
+        $this->portSettings = $portSettings;
     }
 
     public function getDeviceStatus(): int
@@ -139,12 +89,12 @@ final class SerialConnection implements GatewayInterface
 
     public function connect(string $mode)
     {
-        $this->setDevice($this->_device);
-        $this->setBaudRate($this->baudRate);
-        $this->setParity($this->parity);
-        $this->setCharacterLength($this->characterLength);
-        $this->setStopBits($this->stopBits);
-        $this->setFlowControl($this->flowControl);
+        $this->setDevice($this->portSettings->device);
+        $this->setBaudRate();
+        $this->setParity();
+        $this->setCharacterLength();
+        $this->setStopBits();
+        $this->setFlowControl();
         $this->open($mode);
     }
 
@@ -172,12 +122,13 @@ final class SerialConnection implements GatewayInterface
                 }
 
                 if ($this->execute->execute("stty -F " . $device) === 0) {
-                    $this->_device = $device;
+                    $this->portSettings->device;
+                    $this->portSettings->device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
                 }
             } elseif ($this->machine->operatingSystem() === 'osx') {
                 if ($this->execute->execute("stty -f " . $device) === 0) {
-                    $this->_device = $device;
+                    $this->portSettings->device = $device;
                     $this->_dState = SERIAL_DEVICE_SET;
                 }
             } elseif ($this->machine->operatingSystem() === "windows") {
@@ -187,7 +138,7 @@ final class SerialConnection implements GatewayInterface
                         ) === 0
                 ) {
                     $this->_winDevice = "COM" . $matches[1];
-                    $this->_device = "\\.com" . $matches[1];
+                    $this->portSettings->device = "\\.com" . $matches[1];
                     $this->_dState = SERIAL_DEVICE_SET;
                 }
             }
@@ -234,7 +185,7 @@ final class SerialConnection implements GatewayInterface
             return false;
         }
 
-        $this->_dHandle = @fopen($this->_device, $mode);
+        $this->_dHandle = @fopen($this->portSettings->device, $mode);
 
         if ($this->_dHandle !== false) {
             stream_set_blocking($this->_dHandle, 0);
@@ -272,26 +223,23 @@ final class SerialConnection implements GatewayInterface
 
     /**
      * Configure the Baud Rate.
-     *
-     * @param int $rate
-     *  The rate to set the port in.
      */
-    private function setBaudRate(int $rate): void
+    private function setBaudRate(): void
     {
-        $this->deviceStatus('baud rate', $rate);
+        $this->deviceStatus('baud rate', $this->portSettings->baudRate);
 
         if (!$this->machine->operatingSystem() !== 'windows') {
-            $result = $this->write($rate);
+            $result = $this->write($this->portSettings->baudRate);
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . ' BAUD=' . self::VALID_BAUDS[$rate],
+                "mode " . $this->_winDevice . ' BAUD=' . self::VALID_BAUDS[$this->portSettings->baudRate],
                 $out
             );
         }
 
         if ($result !== 0) {
             throw new RuntimeException(
-                'Unable to set baud rate: ' . $rate
+                'Unable to set baud rate: ' . $this->portSettings->baudRate
             );
         }
     }
@@ -314,44 +262,38 @@ final class SerialConnection implements GatewayInterface
         }
 
         return $this->execute->execute(
-            $command . ' ' . $this->_device . ' ' . $value,
+            $command . ' ' . $this->portSettings->device . ' ' . $value,
             $out);
     }
 
     /**
      * Set parity.
      * Valid modes: odd, even, none.
-     *
-     * @param  string $parity
      */
-    private function setParity(string $parity): void
+    private function setParity(): void
     {
-        $this->deviceStatus('parity', $parity);
+        $this->deviceStatus('parity', $this->portSettings->parity);
 
         if ($this->machine->operatingSystem() !== 'windows') {
-            $result = $this->write(self::VALID_PARITY[$parity]);
+            $result = $this->write(self::VALID_PARITY[$this->portSettings->parity]);
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . " PARITY=" . $parity[0],
+                "mode " . $this->_winDevice . " PARITY=" . $this->portSettings->parity[0],
                 $out
             );
         }
 
         if ($result !== 0) {
             throw new RuntimeException(
-                'Unable to set parity to: ' . $parity
+                'Unable to set parity to: ' . $this->portSettings->parity
             );
         }
     }
 
     /**
      * Sets the length of a character.
-     *
-     * @param  int  $int length of a character (5 <= length <= 8)
-     *
-     * @return bool
      */
-    private function setCharacterLength(int $int): bool
+    private function setCharacterLength(): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set length of a character : the device " .
@@ -360,25 +302,19 @@ final class SerialConnection implements GatewayInterface
             return false;
         }
 
-        if ($int < 5) {
-            $int = 5;
-        } elseif ($int > 8) {
-            $int = 8;
-        }
-
         if ($this->machine->operatingSystem() === "linux") {
             $ret = $this->execute->execute(
-                "stty -F " . $this->_device . " cs" . $int,
+                "stty -F " . $this->portSettings->device . " cs" . $this->portSettings->characterLength,
                 $out
             );
         } elseif ($this->machine->operatingSystem() === "osx") {
             $ret = $this->execute->execute(
-                "stty -f " . $this->_device . " cs" . $int,
+                "stty -f " . $this->portSettings->device . " cs" . $this->portSettings->characterLength,
                 $out
             );
         } else {
             $ret = $this->execute->execute(
-                "mode " . $this->_winDevice . " DATA=" . $int,
+                "mode " . $this->_winDevice . " DATA=" . $this->portSettings->characterLength,
                 $out
             );
         }
@@ -398,25 +334,24 @@ final class SerialConnection implements GatewayInterface
     /**
      * Sets the length of stop bits.
      *
-     * @param  float $length the length of a stop bit.
      * It must be either 1, 1.5 or 2.
      * 1.5 is not supported under some windows computers and Linux.
      */
-    private function setStopBits(float $length): void
+    private function setStopBits(): void
     {
-        $this->deviceStatus('stop bits', $length);
+        $this->deviceStatus('stop bits', $this->portSettings->stopBits);
         if ($this->machine->operatingSystem() !== 'windows') {
-            $result = $this->write(' ' . (($length === 1) ? "-" : "") . 'cstopb');
+            $result = $this->write(' ' . (($this->portSettings->stopBits === 1) ? "-" : "") . 'cstopb');
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . " STOP=" . $length,
+                "mode " . $this->_winDevice . " STOP=" . $this->portSettings->stopBits,
                 $out
             );
         }
 
         if ($result !== 0) {
             throw new RuntimeException(
-                'Unable to set stop bits to: ' . $length
+                'Unable to set stop bits to: ' . $this->portSettings->stopBits
             );
         }
     }
@@ -424,21 +359,20 @@ final class SerialConnection implements GatewayInterface
     /**
      * Configures the flow control.
      *
-     * @param  string $mode
      * Set the flow control mode. Available modes :
      *  -> "none" : no flow control
      *  -> "rts/cts" : use RTS/CTS handshaking
      *  -> "xon/xoff" : use XON/XOFF protocol
      */
-    private function setFlowControl(string $mode): void
+    private function setFlowControl(): void
     {
-        $this->deviceStatus('flow control', $mode);
+        $this->deviceStatus('flow control', $this->portSettings->flowControl);
 
         if ($this->machine->operatingSystem() !== 'windows') {
-            $result = $this->write(self::VALID_FLOW_CONTROL[$mode]);
+            $result = $this->write(self::VALID_FLOW_CONTROL[$this->portSettings->flowControl]);
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . " " . self::VALID_FLOW_CONTROL_WINDOWS[$mode],
+                "mode " . $this->_winDevice . " " . self::VALID_FLOW_CONTROL_WINDOWS[$this->portSettings->flowControl],
                 $out
             );
         }
@@ -470,7 +404,7 @@ final class SerialConnection implements GatewayInterface
         }
 
         $return = exec(
-            "setserial " . $this->_device . " " . $param . " " . $arg . " 2>&1"
+            "setserial " . $this->portSettings->device . " " . $param . " " . $arg . " 2>&1"
         );
 
         if ($return[0] === "I") {
