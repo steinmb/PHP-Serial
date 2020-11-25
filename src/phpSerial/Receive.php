@@ -8,7 +8,7 @@ final class Receive implements ReceiveInterface
 {
     private $serialConnection;
 
-    public function __construct(SerialConnection $serialConnection)
+    public function __construct(GatewayInterface $serialConnection)
     {
         $this->serialConnection = $serialConnection;
     }

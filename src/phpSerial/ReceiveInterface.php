@@ -4,6 +4,6 @@ namespace steinmb\phpSerial;
 
 interface ReceiveInterface
 {
-    public function __construct(SerialConnection $serialConnection);
+    public function __construct(GatewayInterface $serialConnection);
     public function read();
 }
