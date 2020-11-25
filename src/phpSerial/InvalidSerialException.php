@@ -2,7 +2,9 @@
 
 namespace steinmb\phpSerial;
 
-final class InvalidSerialException extends \InvalidArgumentException
+use InvalidArgumentException;
+
+final class InvalidSerialException extends InvalidArgumentException
 {
     public static function invalidBaudRate(array $validBaudRate, int $baudRate): InvalidSerialException
     {
