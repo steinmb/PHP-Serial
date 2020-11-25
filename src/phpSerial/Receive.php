@@ -24,6 +24,7 @@ final class Receive implements ReceiveInterface
      */
     public function readPort(int $count = 0): string
     {
+        $this->setupDevice();
         if ($this->serialConnection->_dState !== SERIAL_DEVICE_OPENED) {
             throw new RuntimeException(
                 'Device must be opened to read it.'
@@ -53,5 +54,10 @@ final class Receive implements ReceiveInterface
         }
 
         return $content;
+    }
+
+    private function setupDevice(): void
+    {
+        $this->serialConnection->connect('r+b');
     }
 }
