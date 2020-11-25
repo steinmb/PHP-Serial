@@ -44,16 +44,16 @@ final class SerialConnection
         'rts/cts'  => 'xon=off octs=on rts=hs',
         'xon/xoff' => 'xon=on octs=off rts=on',
     ];
-    public $_device = '';
-    public $baudRate;
-    public $parity;
-    public $characterLength;
-    public $stopBits;
-    public $flowControl;
-    public $_winDevice;
-    public $_dHandle;
-    public $_dState = SERIAL_DEVICE_NOTSET;
-    public $_buffer = "";
+    private $_device = '';
+    private $baudRate;
+    private $parity;
+    private $characterLength;
+    private $stopBits;
+    private $flowControl;
+    private $_winDevice;
+    private $_dHandle;
+    private $_dState = SERIAL_DEVICE_NOTSET;
+    private $_buffer = "";
     private $machine;
 
     /**
@@ -114,6 +114,11 @@ final class SerialConnection
         }
 
         $this->flowControl = $flowControl;
+    }
+
+    public function getDeviceStatus(): int
+    {
+        return $this->_dState;
     }
 
     public function changeDevice(string $device): SerialConnection
