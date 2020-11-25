@@ -42,10 +42,6 @@ final class SerialConnection implements GatewayInterface
         'rts/cts'  => 'xon=off octs=on rts=hs',
         'xon/xoff' => 'xon=on octs=off rts=on',
     ];
-    private $parity;
-    private $characterLength;
-    private $stopBits;
-    private $flowControl;
     private $_winDevice;
     private $_dHandle;
     private $_dState = SERIAL_DEVICE_NOTSET;
@@ -97,8 +93,8 @@ final class SerialConnection implements GatewayInterface
         $this->setBaudRate();
         $this->setParity();
         $this->setCharacterLength();
-        $this->setStopBits($this->portSettings->stopBits);
-        $this->setFlowControl($this->portSettings->flowControl);
+        $this->setStopBits();
+        $this->setFlowControl();
         $this->open($mode);
     }
 
@@ -306,12 +302,6 @@ final class SerialConnection implements GatewayInterface
             return false;
         }
 
-        if ($this->portSettings->characterLength < 5) {
-            $int = 5;
-        } elseif ($this->portSettings->characterLength > 8) {
-            $int = 8;
-        }
-
         if ($this->machine->operatingSystem() === "linux") {
             $ret = $this->execute->execute(
                 "stty -F " . $this->portSettings->device . " cs" . $this->portSettings->characterLength,
@@ -344,25 +334,24 @@ final class SerialConnection implements GatewayInterface
     /**
      * Sets the length of stop bits.
      *
-     * @param  float $length the length of a stop bit.
      * It must be either 1, 1.5 or 2.
      * 1.5 is not supported under some windows computers and Linux.
      */
-    private function setStopBits(float $length): void
+    private function setStopBits(): void
     {
-        $this->deviceStatus('stop bits', $length);
+        $this->deviceStatus('stop bits', $this->portSettings->stopBits);
         if ($this->machine->operatingSystem() !== 'windows') {
-            $result = $this->write(' ' . (($length === 1) ? "-" : "") . 'cstopb');
+            $result = $this->write(' ' . (($this->portSettings->stopBits === 1) ? "-" : "") . 'cstopb');
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . " STOP=" . $length,
+                "mode " . $this->_winDevice . " STOP=" . $this->portSettings->stopBits,
                 $out
             );
         }
 
         if ($result !== 0) {
             throw new RuntimeException(
-                'Unable to set stop bits to: ' . $length
+                'Unable to set stop bits to: ' . $this->portSettings->stopBits
             );
         }
     }
@@ -370,21 +359,20 @@ final class SerialConnection implements GatewayInterface
     /**
      * Configures the flow control.
      *
-     * @param  string $mode
      * Set the flow control mode. Available modes :
      *  -> "none" : no flow control
      *  -> "rts/cts" : use RTS/CTS handshaking
      *  -> "xon/xoff" : use XON/XOFF protocol
      */
-    private function setFlowControl(string $mode): void
+    private function setFlowControl(): void
     {
-        $this->deviceStatus('flow control', $mode);
+        $this->deviceStatus('flow control', $this->portSettings->flowControl);
 
         if ($this->machine->operatingSystem() !== 'windows') {
-            $result = $this->write(self::VALID_FLOW_CONTROL[$mode]);
+            $result = $this->write(self::VALID_FLOW_CONTROL[$this->portSettings->flowControl]);
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . " " . self::VALID_FLOW_CONTROL_WINDOWS[$mode],
+                "mode " . $this->_winDevice . " " . self::VALID_FLOW_CONTROL_WINDOWS[$this->portSettings->flowControl],
                 $out
             );
         }
