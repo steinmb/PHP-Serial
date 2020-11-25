@@ -12,7 +12,7 @@ define ("SERIAL_DEVICE_OPENED", 2);
 /**
  * Serial port control class
  */
-final class SerialConnection
+final class SerialConnection implements GatewayInterface
 {
     private const VALID_BAUDS = [
         110    => 11,

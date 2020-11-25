@@ -9,7 +9,7 @@ final class Send implements SendInterface
      */
     private $serialConnection;
 
-    public function __construct(SerialConnection $serialConnection)
+    public function __construct(GatewayInterface $serialConnection)
     {
         $this->serialConnection = $serialConnection;
     }
