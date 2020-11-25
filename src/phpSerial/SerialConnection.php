@@ -107,9 +107,7 @@ final class SerialConnection implements GatewayInterface
             if ($this->machine->operatingSystem() === 'linux') {
                 $this->setLinuxDevice($device);
             } elseif ($this->machine->operatingSystem() === 'osx') {
-                if ($this->execute->execute("stty -f " . $device) === 0) {
-                    $this->deviceStatus = SERIAL_DEVICE_SET;
-                }
+                $this->setmacOSDevice($device);
             } elseif ($this->machine->operatingSystem() === "windows") {
                 if (preg_match("@^COM(\\d+):?$@i", $device, $matches)
                         and $this->execute->execute(
@@ -132,6 +130,16 @@ final class SerialConnection implements GatewayInterface
         );
     }
 
+    private function setmacOSDevice(string $device)
+    {
+        if ($this->execute->execute('stty -f ' . $device) !== 0) {
+            throw new RuntimeException(
+                'Specified macOS serial port: ' . $device . ' not found.'
+            );
+        }
+
+        $this->deviceStatus = SERIAL_DEVICE_SET;
+    }
     private function setLinuxDevice(string $device): void
     {
         if (exec("stty") !== 0) {
