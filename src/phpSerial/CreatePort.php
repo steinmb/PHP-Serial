@@ -4,7 +4,7 @@ namespace steinmb\phpSerial;
 
 use InvalidArgumentException;
 
-class CreatePort
+final class CreatePort
 {
     private const VALID_BAUDS = [
         110    => 11,

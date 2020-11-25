@@ -4,7 +4,7 @@
 namespace steinmb\phpSerial;
 
 
-class ExecuteCommand implements ExecuteInterface
+final class ExecuteCommand implements ExecuteInterface
 {
     public function execute($cmd, &$out = null): int
     {
