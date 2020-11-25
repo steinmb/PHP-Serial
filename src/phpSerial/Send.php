@@ -24,7 +24,7 @@ final class Send implements SendInterface
     public function send(string $message, float $waitForReply = 0.1): void
     {
         $this->setupDevice();
-        $this->serialConnection->_buffer .= $message;
+        $this->serialConnection->sendMessage($message);
 
         if ($this->serialConnection->autoFlush === true) {
             $this->serialConnection->flush();

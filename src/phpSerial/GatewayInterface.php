@@ -20,4 +20,5 @@ interface GatewayInterface
     public function changeDevice(string $deviceName);
     public function connect(string $mode);
     public function flush(): void;
+    public function sendMessage(string $message): void;
 }
