@@ -7,7 +7,7 @@ namespace steinmb\phpSerial;
 interface GatewayInterface
 {
     public function __construct(
-        System $machine,
+        SystemInterface $machine,
         string $device,
         int $baudRate,
         string $parity,

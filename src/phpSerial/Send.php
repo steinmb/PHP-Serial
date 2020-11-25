@@ -35,6 +35,6 @@ final class Send implements SendInterface
 
     private function setupDevice(): void
     {
-        $this->serialConnection->connect('r+b');
+        $this->serialConnection->connect('w+b');
     }
 }
