@@ -50,4 +50,39 @@ final class SendTest extends TestCase
         self::assertEquals(0, $this->linux->getDeviceStatus());
     }
 
+    public function testUnknownStopBits(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $illegalLinuxStopBits = 1.5;
+        self::assertEquals(
+            'Linux do not support: ' . $illegalLinuxStopBits . ' setting.',
+            new CreatePort(
+                new SystemFixed('linux'),
+                'ttyS0',
+                38400,
+                'none',
+                8,
+                1.5,
+                'none'
+            ),
+            'Failed detecting a illegal parity setting under Linux.'
+        );
+    }
+
+    public function testCreatePort(): void
+    {
+        self::assertInstanceOf(
+            CreatePort::class,
+            new CreatePort(
+                new SystemFixed('linux'),
+                'ttyS0',
+                38400,
+                'none',
+                8,
+                1,
+                'none'
+            ),
+            'Failed detecting a illegal parity setting under Linux.'
+        );
+    }
 }
