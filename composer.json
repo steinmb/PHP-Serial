@@ -16,5 +16,9 @@
         "psr-4": {
             "steinmb\\": "src/"
         }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^0.12.31",
+        "phpunit/phpunit": "^9"
     }
 }
