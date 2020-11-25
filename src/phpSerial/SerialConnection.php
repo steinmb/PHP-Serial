@@ -188,7 +188,7 @@ final class SerialConnection implements GatewayInterface
         $this->deviceHandle = @fopen($this->portSettings->device, $mode);
 
         if ($this->deviceHandle !== false) {
-            stream_set_blocking($this->deviceHandle, 0);
+            stream_set_blocking($this->deviceHandle, false);
             $this->deviceStatus = SERIAL_DEVICE_OPENED;
 
             return true;
