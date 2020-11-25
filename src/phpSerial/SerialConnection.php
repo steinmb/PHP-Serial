@@ -121,6 +121,11 @@ final class SerialConnection
         return $this->_dState;
     }
 
+    public function getDeviceHandle()
+    {
+        return $this->_dHandle;
+    }
+
     public function changeDevice(string $device): SerialConnection
     {
         $new_object = clone $this;
