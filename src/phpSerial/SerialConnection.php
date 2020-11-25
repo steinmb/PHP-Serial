@@ -42,7 +42,7 @@ final class SerialConnection implements GatewayInterface
         'rts/cts'  => 'xon=off octs=on rts=hs',
         'xon/xoff' => 'xon=on octs=off rts=on',
     ];
-    private $_dState = SERIAL_DEVICE_NOTSET;
+    private $deviceStatus = SERIAL_DEVICE_NOTSET;
     private $windowsDevice;
     private $_dHandle;
     private $_buffer = '';
@@ -71,7 +71,7 @@ final class SerialConnection implements GatewayInterface
 
     public function getDeviceStatus(): int
     {
-        return $this->_dState;
+        return $this->deviceStatus;
     }
 
     public function getDeviceHandle()
@@ -109,7 +109,7 @@ final class SerialConnection implements GatewayInterface
      */
     private function setDevice(string $device): void
     {
-        if ($this->_dState !== SERIAL_DEVICE_OPENED) {
+        if ($this->deviceStatus !== SERIAL_DEVICE_OPENED) {
             if ($this->machine->operatingSystem() === 'linux') {
                 if (exec("stty") !== 0) {
                     throw new RuntimeException(
@@ -124,12 +124,12 @@ final class SerialConnection implements GatewayInterface
                 if ($this->execute->execute("stty -F " . $device) === 0) {
                     $this->portSettings->device;
                     $this->portSettings->device = $device;
-                    $this->_dState = SERIAL_DEVICE_SET;
+                    $this->deviceStatus = SERIAL_DEVICE_SET;
                 }
             } elseif ($this->machine->operatingSystem() === 'osx') {
                 if ($this->execute->execute("stty -f " . $device) === 0) {
                     $this->portSettings->device = $device;
-                    $this->_dState = SERIAL_DEVICE_SET;
+                    $this->deviceStatus = SERIAL_DEVICE_SET;
                 }
             } elseif ($this->machine->operatingSystem() === "windows") {
                 if (preg_match("@^COM(\\d+):?$@i", $device, $matches)
@@ -139,7 +139,7 @@ final class SerialConnection implements GatewayInterface
                 ) {
                     $this->windowsDevice = "COM" . $matches[1];
                     $this->portSettings->device = "\\.com" . $matches[1];
-                    $this->_dState = SERIAL_DEVICE_SET;
+                    $this->deviceStatus = SERIAL_DEVICE_SET;
                 }
             }
 
@@ -161,13 +161,13 @@ final class SerialConnection implements GatewayInterface
      */
     private function open($mode = 'r+b'): bool
     {
-        if ($this->_dState === SERIAL_DEVICE_OPENED) {
+        if ($this->deviceStatus === SERIAL_DEVICE_OPENED) {
             trigger_error("The device is already opened", E_USER_NOTICE);
 
             return true;
         }
 
-        if ($this->_dState === SERIAL_DEVICE_NOTSET) {
+        if ($this->deviceStatus === SERIAL_DEVICE_NOTSET) {
             trigger_error(
                 "The device must be set before to be open",
                 E_USER_WARNING
@@ -189,7 +189,7 @@ final class SerialConnection implements GatewayInterface
 
         if ($this->_dHandle !== false) {
             stream_set_blocking($this->_dHandle, 0);
-            $this->_dState = SERIAL_DEVICE_OPENED;
+            $this->deviceStatus = SERIAL_DEVICE_OPENED;
 
             return true;
         }
@@ -207,13 +207,13 @@ final class SerialConnection implements GatewayInterface
      */
     private function close(): bool
     {
-        if ($this->_dState !== SERIAL_DEVICE_OPENED) {
+        if ($this->deviceStatus !== SERIAL_DEVICE_OPENED) {
             return true;
         }
 
         if (fclose($this->_dHandle)) {
             $this->_dHandle = null;
-            $this->_dState = SERIAL_DEVICE_SET;
+            $this->deviceStatus = SERIAL_DEVICE_SET;
 
             return true;
         }
@@ -246,7 +246,7 @@ final class SerialConnection implements GatewayInterface
 
     private function deviceStatus($message, $value): void
     {
-        if ($this->_dState !== SERIAL_DEVICE_SET) {
+        if ($this->deviceStatus !== SERIAL_DEVICE_SET) {
             throw new RuntimeException(
                 'Unable to set ' . $message . ' to ' . $value .
                 ' The device is either not set or opened.'
@@ -295,7 +295,7 @@ final class SerialConnection implements GatewayInterface
      */
     private function setCharacterLength(): bool
     {
-        if ($this->_dState !== SERIAL_DEVICE_SET) {
+        if ($this->deviceStatus !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set length of a character : the device " .
                           "is either not set or opened", E_USER_WARNING);
 
@@ -438,7 +438,7 @@ final class SerialConnection implements GatewayInterface
 
     private function _ckOpened(): bool
     {
-        if ($this->_dState !== SERIAL_DEVICE_OPENED) {
+        if ($this->deviceStatus !== SERIAL_DEVICE_OPENED) {
             trigger_error("Device must be opened", E_USER_WARNING);
 
             return false;
@@ -449,7 +449,7 @@ final class SerialConnection implements GatewayInterface
 
     private function _ckClosed(): bool
     {
-        if ($this->_dState === SERIAL_DEVICE_OPENED) {
+        if ($this->deviceStatus === SERIAL_DEVICE_OPENED) {
             trigger_error('Device must be closed', E_USER_WARNING);
             return false;
         }
