@@ -8,9 +8,11 @@ use steinmb\phpSerial\Receive;
 use steinmb\phpSerial\Send;
 use steinmb\phpSerial\SerialConnection;
 use steinmb\phpSerial\System;
+use steinmb\phpSerial\SystemFixed;
 
 $portSettings = new CreatePort(
-    'com1',
+    new SystemFixed('linux'),
+    'ttyS0',
     38400,
     'none',
     8,

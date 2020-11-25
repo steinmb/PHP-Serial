@@ -34,6 +34,7 @@ class CreatePort
     public $flowControl;
 
     public function __construct(
+        SystemInterface $machine,
         string $device,
         int $baudRate,
         string $parity,
@@ -42,6 +43,7 @@ class CreatePort
         string $flowControl
     )
     {
+        $this->machine = $machine;
         $this->device = $device;
 
         if (!isset(self::VALID_BAUDS[$baudRate])) {
