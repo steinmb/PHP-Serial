@@ -42,14 +42,14 @@ final class Receive implements ReceiveInterface
         if ($count !== 0) {
             do {
                 if ($i > $count) {
-                    $content .= fread($this->serialConnection->getDeviceStatus(), ($count - $i));
+                    $content .= fread($this->serialConnection->getDeviceHandle(), ($count - $i));
                 } else {
-                    $content .= fread($this->serialConnection->getDeviceStatus(), 128);
+                    $content .= fread($this->serialConnection->getDeviceHandle(), 128);
                 }
             } while (($i += 128) === strlen($content));
         } else {
             do {
-                $content .= fread($this->serialConnection->getDeviceStatus(), 128);
+                $content .= fread($this->serialConnection->getDeviceHandle(), 128);
             } while (($i += 128) === strlen($content));
         }
 
