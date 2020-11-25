@@ -25,7 +25,7 @@ final class Receive implements ReceiveInterface
     public function readPort(int $count = 0): string
     {
         $this->setupDevice();
-        if ($this->serialConnection->_dState !== SERIAL_DEVICE_OPENED) {
+        if ($this->serialConnection->getDeviceStatus() !== SERIAL_DEVICE_OPENED) {
             throw new RuntimeException(
                 'Device must be opened to read it.'
             );
@@ -42,14 +42,14 @@ final class Receive implements ReceiveInterface
         if ($count !== 0) {
             do {
                 if ($i > $count) {
-                    $content .= fread($this->serialConnection->_dHandle, ($count - $i));
+                    $content .= fread($this->serialConnection->getDeviceStatus(), ($count - $i));
                 } else {
-                    $content .= fread($this->serialConnection->_dHandle, 128);
+                    $content .= fread($this->serialConnection->getDeviceStatus(), 128);
                 }
             } while (($i += 128) === strlen($content));
         } else {
             do {
-                $content .= fread($this->serialConnection->_dHandle, 128);
+                $content .= fread($this->serialConnection->getDeviceStatus(), 128);
             } while (($i += 128) === strlen($content));
         }
 
