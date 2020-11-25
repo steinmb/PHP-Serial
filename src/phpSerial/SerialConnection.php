@@ -65,7 +65,7 @@ final class SerialConnection implements GatewayInterface
     public $autoFlush = true;
 
     public function __construct(
-        System $machine,
+        SystemInterface $machine,
         string $device,
         int $baudRate,
         string $parity,
