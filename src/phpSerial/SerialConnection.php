@@ -42,9 +42,9 @@ final class SerialConnection implements GatewayInterface
         'rts/cts'  => 'xon=off octs=on rts=hs',
         'xon/xoff' => 'xon=on octs=off rts=on',
     ];
-    private $_winDevice;
-    private $_dHandle;
     private $_dState = SERIAL_DEVICE_NOTSET;
+    private $windowsDevice;
+    private $_dHandle;
     private $_buffer = '';
     private $machine;
     private $execute;
@@ -137,7 +137,7 @@ final class SerialConnection implements GatewayInterface
                             exec("mode " . $device . " xon=on BAUD=9600")
                         ) === 0
                 ) {
-                    $this->_winDevice = "COM" . $matches[1];
+                    $this->windowsDevice = "COM" . $matches[1];
                     $this->portSettings->device = "\\.com" . $matches[1];
                     $this->_dState = SERIAL_DEVICE_SET;
                 }
@@ -232,7 +232,7 @@ final class SerialConnection implements GatewayInterface
             $result = $this->write($this->portSettings->baudRate);
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . ' BAUD=' . self::VALID_BAUDS[$this->portSettings->baudRate],
+                "mode " . $this->windowsDevice . ' BAUD=' . self::VALID_BAUDS[$this->portSettings->baudRate],
                 $out
             );
         }
@@ -278,7 +278,7 @@ final class SerialConnection implements GatewayInterface
             $result = $this->write(self::VALID_PARITY[$this->portSettings->parity]);
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . " PARITY=" . $this->portSettings->parity[0],
+                "mode " . $this->windowsDevice . " PARITY=" . $this->portSettings->parity[0],
                 $out
             );
         }
@@ -314,7 +314,7 @@ final class SerialConnection implements GatewayInterface
             );
         } else {
             $ret = $this->execute->execute(
-                "mode " . $this->_winDevice . " DATA=" . $this->portSettings->characterLength,
+                "mode " . $this->windowsDevice . " DATA=" . $this->portSettings->characterLength,
                 $out
             );
         }
@@ -344,7 +344,7 @@ final class SerialConnection implements GatewayInterface
             $result = $this->write(' ' . (($this->portSettings->stopBits === 1) ? "-" : "") . 'cstopb');
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . " STOP=" . $this->portSettings->stopBits,
+                "mode " . $this->windowsDevice . " STOP=" . $this->portSettings->stopBits,
                 $out
             );
         }
@@ -372,7 +372,7 @@ final class SerialConnection implements GatewayInterface
             $result = $this->write(self::VALID_FLOW_CONTROL[$this->portSettings->flowControl]);
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . " " . self::VALID_FLOW_CONTROL_WINDOWS[$this->portSettings->flowControl],
+                "mode " . $this->windowsDevice . " " . self::VALID_FLOW_CONTROL_WINDOWS[$this->portSettings->flowControl],
                 $out
             );
         }
