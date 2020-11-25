@@ -42,7 +42,6 @@ final class SerialConnection implements GatewayInterface
         'rts/cts'  => 'xon=off octs=on rts=hs',
         'xon/xoff' => 'xon=on octs=off rts=on',
     ];
-    private $baudRate;
     private $parity;
     private $characterLength;
     private $stopBits;
@@ -95,9 +94,9 @@ final class SerialConnection implements GatewayInterface
     public function connect(string $mode)
     {
         $this->setDevice($this->portSettings->device);
-        $this->setBaudRate($this->portSettings->baudRate);
-        $this->setParity($this->portSettings->parity);
-        $this->setCharacterLength($this->portSettings->characterLength);
+        $this->setBaudRate();
+        $this->setParity();
+        $this->setCharacterLength();
         $this->setStopBits($this->portSettings->stopBits);
         $this->setFlowControl($this->portSettings->flowControl);
         $this->open($mode);
@@ -228,26 +227,23 @@ final class SerialConnection implements GatewayInterface
 
     /**
      * Configure the Baud Rate.
-     *
-     * @param int $rate
-     *  The rate to set the port in.
      */
-    private function setBaudRate(int $rate): void
+    private function setBaudRate(): void
     {
-        $this->deviceStatus('baud rate', $rate);
+        $this->deviceStatus('baud rate', $this->portSettings->baudRate);
 
         if (!$this->machine->operatingSystem() !== 'windows') {
-            $result = $this->write($rate);
+            $result = $this->write($this->portSettings->baudRate);
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . ' BAUD=' . self::VALID_BAUDS[$rate],
+                "mode " . $this->_winDevice . ' BAUD=' . self::VALID_BAUDS[$this->portSettings->baudRate],
                 $out
             );
         }
 
         if ($result !== 0) {
             throw new RuntimeException(
-                'Unable to set baud rate: ' . $rate
+                'Unable to set baud rate: ' . $this->portSettings->baudRate
             );
         }
     }
@@ -277,37 +273,31 @@ final class SerialConnection implements GatewayInterface
     /**
      * Set parity.
      * Valid modes: odd, even, none.
-     *
-     * @param  string $parity
      */
-    private function setParity(string $parity): void
+    private function setParity(): void
     {
-        $this->deviceStatus('parity', $parity);
+        $this->deviceStatus('parity', $this->portSettings->parity);
 
         if ($this->machine->operatingSystem() !== 'windows') {
-            $result = $this->write(self::VALID_PARITY[$parity]);
+            $result = $this->write(self::VALID_PARITY[$this->portSettings->parity]);
         } else {
             $result = $this->execute->execute(
-                "mode " . $this->_winDevice . " PARITY=" . $parity[0],
+                "mode " . $this->_winDevice . " PARITY=" . $this->portSettings->parity[0],
                 $out
             );
         }
 
         if ($result !== 0) {
             throw new RuntimeException(
-                'Unable to set parity to: ' . $parity
+                'Unable to set parity to: ' . $this->portSettings->parity
             );
         }
     }
 
     /**
      * Sets the length of a character.
-     *
-     * @param  int  $int length of a character (5 <= length <= 8)
-     *
-     * @return bool
      */
-    private function setCharacterLength(int $int): bool
+    private function setCharacterLength(): bool
     {
         if ($this->_dState !== SERIAL_DEVICE_SET) {
             trigger_error("Unable to set length of a character : the device " .
@@ -316,25 +306,25 @@ final class SerialConnection implements GatewayInterface
             return false;
         }
 
-        if ($int < 5) {
+        if ($this->portSettings->characterLength < 5) {
             $int = 5;
-        } elseif ($int > 8) {
+        } elseif ($this->portSettings->characterLength > 8) {
             $int = 8;
         }
 
         if ($this->machine->operatingSystem() === "linux") {
             $ret = $this->execute->execute(
-                "stty -F " . $this->portSettings->device . " cs" . $int,
+                "stty -F " . $this->portSettings->device . " cs" . $this->portSettings->characterLength,
                 $out
             );
         } elseif ($this->machine->operatingSystem() === "osx") {
             $ret = $this->execute->execute(
-                "stty -f " . $this->portSettings->device . " cs" . $int,
+                "stty -f " . $this->portSettings->device . " cs" . $this->portSettings->characterLength,
                 $out
             );
         } else {
             $ret = $this->execute->execute(
-                "mode " . $this->_winDevice . " DATA=" . $int,
+                "mode " . $this->_winDevice . " DATA=" . $this->portSettings->characterLength,
                 $out
             );
         }
