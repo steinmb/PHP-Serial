@@ -91,45 +91,41 @@ final class SerialConnection implements GatewayInterface
     }
 
     /**
-     * Device set function : used to set the device name/address.
-     * -> linux : use the device address, like /dev/ttyS0
-     * -> osx : use the device address, like /dev/tty.serial
-     * -> windows : use the COMxx device name, like COM1 (can also be used
-     *     with linux)
+     * Set the device name/address.
      *
-     * @param  string $device the name of the device to be used
+     * Linux: Use the device address, like /dev/ttyS0.
+     * macOS: Use the device address, like /dev/tty.serial.
+     * Windows: Use the COMxx device name, like COM1.
      */
     private function setDevice(): void
     {
         $device = $this->portSettings->device;
-
         if ($this->deviceStatus !== SERIAL_DEVICE_OPENED) {
             if ($this->machine->operatingSystem() === 'linux') {
                 $this->setLinuxDevice($device);
             } elseif ($this->machine->operatingSystem() === 'osx') {
                 $this->setmacOSDevice($device);
-            } elseif ($this->machine->operatingSystem() === "windows") {
-                if (preg_match("@^COM(\\d+):?$@i", $device, $matches)
-                        and $this->execute->execute(
-                            exec("mode " . $device . " xon=on BAUD=9600")
-                        ) === 0
-                ) {
-                    $this->windowsDevice = "COM" . $matches[1];
-                    $this->portSettings->device = "\\.com" . $matches[1];
-                    $this->deviceStatus = SERIAL_DEVICE_SET;
-                }
             }
 
-            throw new RuntimeException(
-                'Specified serial port: ' . $device . ' not found.'
-            );
+            $this->setWindowDevice($device);
+            return;
         }
 
         throw new RuntimeException(
-            'You must close your device before to set an other.'
+          'Unable to set port, already open.'
         );
     }
-
+    private function setWindowDevice(string $device)
+    {
+        if (preg_match("@^COM(\\d+):?$@i", $device, $matches)
+            && $this->execute->execute(
+                exec("mode " . $device . " xon=on BAUD=9600")
+            ) === 0
+        ) {
+            $this->windowsDevice = "COM" . $matches[1];
+            $this->deviceStatus = SERIAL_DEVICE_SET;
+        }
+    }
     private function setmacOSDevice(string $device)
     {
         if ($this->execute->execute('stty -f ' . $device) !== 0) {
