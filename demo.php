@@ -30,3 +30,6 @@ $receiveService = new Receive($port1);
 
 $senderService->send('Foo bar');
 $receiveService->read();
+
+$senderService->close();
+$receiveService->close();

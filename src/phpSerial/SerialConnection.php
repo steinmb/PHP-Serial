@@ -205,7 +205,7 @@ final class SerialConnection implements GatewayInterface
      *
      * @return bool
      */
-    private function close(): bool
+    public function close(): bool
     {
         if ($this->deviceStatus !== SERIAL_DEVICE_OPENED) {
             return true;

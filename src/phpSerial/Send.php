@@ -37,4 +37,9 @@ final class Send implements SendInterface
     {
         $this->serialConnection->connect('w+b');
     }
+
+    public function close(): void
+    {
+        $this->serialConnection->close();
+    }
 }

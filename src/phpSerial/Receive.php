@@ -60,4 +60,9 @@ final class Receive implements ReceiveInterface
     {
         $this->serialConnection->connect('r+b');
     }
+
+    public function close(): void
+    {
+        $this->serialConnection->close();
+    }
 }
