@@ -2,22 +2,27 @@
 
 include_once __DIR__ . '/vendor/autoload.php';
 
+use steinmb\phpSerial\CreatePort;
 use steinmb\phpSerial\ExecuteNull;
 use steinmb\phpSerial\Receive;
 use steinmb\phpSerial\Send;
 use steinmb\phpSerial\SerialConnection;
 use steinmb\phpSerial\System;
+use steinmb\phpSerial\SystemFixed;
 
-$clientSystem = new System();
-$port1 = new SerialConnection(
-    new System(),
-    new ExecuteNull(),
-    'com1',
+$portSettings = new CreatePort(
+    new SystemFixed('linux'),
+    'ttyS0',
     38400,
     'none',
     8,
     1,
     'none'
+);
+$port1 = new SerialConnection(
+    new System(),
+    new ExecuteNull(),
+    $portSettings
 );
 
 $senderService = new Send($port1);

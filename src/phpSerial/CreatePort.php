@@ -4,7 +4,7 @@ namespace steinmb\phpSerial;
 
 use InvalidArgumentException;
 
-class CreatePort
+final class CreatePort
 {
     private const VALID_BAUDS = [
         110    => 11,
@@ -34,6 +34,7 @@ class CreatePort
     public $flowControl;
 
     public function __construct(
+        SystemInterface $machine,
         string $device,
         int $baudRate,
         string $parity,
@@ -42,6 +43,7 @@ class CreatePort
         string $flowControl
     )
     {
+        $this->machine = $machine;
         $this->device = $device;
 
         if (!isset(self::VALID_BAUDS[$baudRate])) {
