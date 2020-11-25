@@ -9,12 +9,7 @@ interface GatewayInterface
     public function __construct(
         SystemInterface $machine,
         ExecuteInterface $execute,
-        string $device,
-        int $baudRate,
-        string $parity,
-        int $characterLength,
-        float $stopBits,
-        string $flowControl
+        CreatePort $portSettings
     );
     public function getDeviceStatus(): int;
     public function getDeviceHandle();

@@ -1,5 +1,7 @@
 <?php
 
+use steinmb\phpSerial\CreatePort;
+use steinmb\phpSerial\ExecuteNull;
 use steinmb\phpSerial\Send;
 use PHPUnit\Framework\TestCase;
 use steinmb\phpSerial\SerialConnection;
@@ -13,39 +15,34 @@ final class SendTest extends TestCase
 
     public function setup(): void
     {
-        $this->linux = new SerialConnection(
-            new SystemFixed('linux'),
+        $portSettings = new CreatePort(
             'com1',
             38400,
             'none',
             8,
             1,
             'none'
+        );
+        $this->linux = new SerialConnection(
+            new SystemFixed('linux'),
+            new ExecuteNull(),
+            $portSettings
         );
 
         $this->macOS = new SerialConnection(
             new SystemFixed('osx'),
-            'com1',
-            38400,
-            'none',
-            8,
-            1,
-            'none'
+            new ExecuteNull(),
+            $portSettings
         );
 
         $this->windows = new SerialConnection(
             new SystemFixed('windows'),
-            'com1',
-            38400,
-            'none',
-            8,
-            1,
-            'none'
+            new ExecuteNull(),
+            $portSettings
         );
-
     }
 
-    public function testSend()
+    public function testSend(): void
     {
         $linuxSender = new Send($this->linux);
         self::assertEquals(0, $this->linux->getDeviceStatus());
