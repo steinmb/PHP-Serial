@@ -21,7 +21,7 @@ $portSettings = new CreatePort(
 );
 $port1 = new SerialConnection(
     new System(),
-    new ExecuteNull(),
+    new ExecuteNull(0),
     $portSettings
 );
 

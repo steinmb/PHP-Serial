@@ -6,8 +6,16 @@ namespace steinmb\phpSerial;
 
 final class ExecuteNull implements ExecuteInterface
 {
+    protected $returnValue;
+
+    public function __construct(int $returnValue)
+    {
+        $this->returnValue = $returnValue;
+    }
+
     public function execute($cmd, &$out = null): int
     {
-        return 0;
+        $out = $cmd;
+        return $this->returnValue;
     }
 }
