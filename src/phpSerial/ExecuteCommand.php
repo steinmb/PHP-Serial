@@ -20,7 +20,7 @@ final class ExecuteCommand implements ExecuteInterface
         $retVal = proc_close($process);
 
         if (func_num_args() === 2) {
-            $out = array($ret, $err);
+            $out = [$ret, $err];
         }
 
         return $retVal;
